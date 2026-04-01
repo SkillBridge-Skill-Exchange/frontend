@@ -5,62 +5,53 @@
  * Manages auth state via localStorage token.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Skills from './pages/Skills';
 import AddSkill from './pages/AddSkill';
+import Dashboard from './pages/Dashboard';
+import Messaging from './pages/Messaging';
+import Profile from './pages/Profile';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-function App() {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || 'null'));
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
-  // Sync state with localStorage
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (storedToken) setToken(storedToken);
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+};
 
-  const handleLogin = (token, user) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    setToken(token);
-    setUser(user);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
-  };
-
+function AppContent() {
   return (
     <Router>
       <div className="app">
-        <Navbar user={user} onLogout={handleLogout} />
+        <Navbar />
         <Routes>
-          <Route
-            path="/login"
-            element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/skills" />}
-          />
-          <Route
-            path="/register"
-            element={!token ? <Register onLogin={handleLogin} /> : <Navigate to="/skills" />}
-          />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
           <Route path="/skills" element={<Skills />} />
-          <Route
-            path="/add-skill"
-            element={token ? <AddSkill /> : <Navigate to="/login" />}
-          />
-          <Route path="/" element={<Navigate to="/skills" />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/messaging" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/add-skill" element={<ProtectedRoute><AddSkill /></ProtectedRoute>} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
