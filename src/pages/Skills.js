@@ -33,7 +33,8 @@ function Skills() {
       if (filters.proficiency_level) params.append('proficiency_level', filters.proficiency_level);
 
       const res = await API.get(`/skills?${params.toString()}`);
-      setSkills(Array.isArray(res.data.data) ? res.data.data : (res.data || []));
+      const raw = Array.isArray(res.data.data) ? res.data.data : (res.data || []);
+      setSkills(raw.map(s => ({ ...s, user: s.owner || s.user })));
     } catch (err) {
       console.error(err);
     } finally {
