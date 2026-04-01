@@ -1,95 +1,141 @@
-/**
- * Skills Page
- * ============
- * Lists all skills from GET /api/skills.
- * Allows authenticated users to delete their own skills.
- */
-
 import React, { useState, useEffect } from 'react';
 import API from '../api';
+import SkillCard from '../components/SkillCard';
+import { useAuth } from '../context/AuthContext';
+import { Search, Filter, FilterX } from 'lucide-react';
 
 function Skills() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+  const [filters, setFilters] = useState({
+    search: '',
+    category: '',
+    type: '',
+    proficiency_level: '',
+  });
+  const { user } = useAuth();
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const clearFilters = () => {
+    setFilters({ search: '', category: '', type: '', proficiency_level: '' });
+  };
 
   const fetchSkills = async () => {
+    setLoading(true);
     try {
-      const res = await API.get('/skills');
-      setSkills(res.data.data);
+      const params = new URLSearchParams();
+      if (filters.search) params.append('search', filters.search);
+      if (filters.category) params.append('category', filters.category);
+      if (filters.type) params.append('type', filters.type);
+      if (filters.proficiency_level) params.append('proficiency_level', filters.proficiency_level);
+
+      const res = await API.get(`/skills?${params.toString()}`);
+      setSkills(Array.isArray(res.data.data) ? res.data.data : (res.data || []));
     } catch (err) {
-      setError('Failed to load skills');
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSkills();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchSkills();
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line
+  }, [filters]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this skill?')) return;
+    if (!window.confirm('Remove this skill from the portal?')) return;
     try {
       await API.delete(`/skills/${id}`);
       setSkills(skills.filter((s) => s.id !== id));
     } catch (err) {
-      alert(err.response?.data?.message || 'Delete failed');
+      alert('Action unauthorized or server error.');
     }
   };
 
-  const getBadgeClass = (level) => {
-    const map = {
-      beginner: 'badge-beginner',
-      intermediate: 'badge-intermediate',
-      advanced: 'badge-advanced',
-      expert: 'badge-expert',
-    };
-    return `badge ${map[level] || ''}`;
-  };
-
-  if (loading) return <div className="page"><p>Loading skills...</p></div>;
-
   return (
-    <div className="page">
-      <h2>All Skills ({skills.length})</h2>
-      {error && <div className="alert alert-error">{error}</div>}
-      {skills.length === 0 ? (
-        <p>No skills listed yet. Be the first to add one!</p>
-      ) : (
-        skills.map((skill) => (
-          <div className="card" key={skill.id}>
-            <h3>{skill.skill_name}</h3>
-            <p>
-              <span className={getBadgeClass(skill.proficiency_level)}>
-                {skill.proficiency_level}
-              </span>
-              {skill.category && (
-                <span style={{ color: '#888', fontSize: '0.85rem' }}>
-                  {skill.category}
-                </span>
-              )}
-            </p>
-            {skill.description && <p>{skill.description}</p>}
-            {skill.owner && (
-              <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.5rem' }}>
-                By <strong>{skill.owner.name}</strong>
-                {skill.owner.college && ` • ${skill.owner.college}`}
-              </p>
-            )}
-            {currentUser && skill.user_id === currentUser.id && (
-              <button
-                className="btn btn-danger"
-                style={{ marginTop: '0.5rem', padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}
-                onClick={() => handleDelete(skill.id)}
-              >
-                Delete
-              </button>
-            )}
+    <div className="page explore-page">
+      <div className="explore-layout">
+        
+        {/* Sidebar Filters (IMAGE MATCH) */}
+        <aside className="filters-sidebar">
+          <div className="section-header">
+            <Filter size={18} /> Filter Results
           </div>
-        ))
-      )}
+
+          <div className="filter-group">
+            <label>LISTING TYPE</label>
+            <select name="type" value={filters.type} onChange={handleFilterChange}>
+              <option value="">All Listings</option>
+              <option value="offer">Offering Help</option>
+              <option value="request">Seeking Help</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>PROFICIENCY</label>
+            <select name="proficiency_level" value={filters.proficiency_level} onChange={handleFilterChange}>
+              <option value="">Any Proficiency</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="expert">Expert</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>CATEGORY</label>
+            <input 
+              type="text" 
+              name="category" 
+              placeholder="e.g. Design, Coding" 
+              value={filters.category} 
+              onChange={handleFilterChange} 
+            />
+          </div>
+
+          <button className="btn-clear" onClick={clearFilters}>Reset Filters</button>
+        </aside>
+
+        {/* Main Content (IMAGE MATCH) */}
+        <main className="explore-main">
+          <h1>Explore Talent</h1>
+          <p>Connect with {skills.length} brilliant student{skills.length !== 1 ? 's' : ''} across campus.</p>
+          
+          <div className="premium-search">
+            <Search className="search-icon" size={24} color="#64748b" />
+            <input
+              type="text"
+              name="search"
+              placeholder="What skill are you looking for?"
+              value={filters.search}
+              onChange={handleFilterChange}
+            />
+          </div>
+
+          {loading ? (
+             <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Gathering listings...</div>
+          ) : (
+            <div className="skills-grid-premium">
+              {skills.map((skill) => (
+                <SkillCard 
+                  key={skill.id} 
+                  skill={skill} 
+                  currentUser={user} 
+                  onDelete={handleDelete} 
+                />
+              ))}
+              {skills.length === 0 && <div className="empty-box">No results matched your filtering criteria.</div>}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
