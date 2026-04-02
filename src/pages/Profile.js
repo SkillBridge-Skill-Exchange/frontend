@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -11,6 +12,12 @@ import '../profile.css';
 const MOCK_PROJECT_THUMB = "file:///C:/Users/harin/.gemini/antigravity/brain/efb08790-66e8-45c9-b3e7-4c863894e111/project_mockup_1775055078149.png";
 
 function Profile() {
+  const { id } = useParams();
+  const { user: currentUser, login } = useAuth();
+  
+  const [profileUser, setProfileUser] = useState(null);
+  const [isVisitor, setIsVisitor] = useState(false);
+  
   const [portfolio, setPortfolio] = useState([]);
   const [endorsements, setEndorsements] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -23,33 +30,49 @@ function Profile() {
   const [editingSkill, setEditingSkill] = useState(null);
   const [skillForm, setSkillForm] = useState({ skill_name: '', category: '', proficiency_level: 'beginner', description: '', type: 'offer' });
 
-  const { user, login } = useAuth();
-  const [editUser, setEditUser] = useState({ ...user });
+  const [editUser, setEditUser] = useState({ ...currentUser });
   const [newProject, setNewProject] = useState({ title: '', description: '', project_link: '', github_link: '' });
 
   useEffect(() => {
     const fetchProfileData = async () => {
+      setLoading(true);
       try {
-        const [portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
-          API.get('/portfolio'),
-          API.get('/endorsements/all'), 
-          API.get('/reviews/my'),
-          API.get('/skills')
-        ]);
-        setPortfolio(portfolioRes.data.data || []);
-        setEndorsements(endorseRes.data.data || []);
-        setReviews(reviewRes.data.data || []);
-        const allSkills = skillsRes.data.data || skillsRes.data || [];
-        // MongoDB uses _id — filter by comparing string representations
-        setMySkills(allSkills.filter(s => {
-          const sid = s.user_id?._id || s.user_id;
-          return sid?.toString() === (user._id || user.id)?.toString();
-        }));
+        const targetId = id || (currentUser?._id || currentUser?.id);
+        const visitorMode = id && id !== (currentUser?._id || currentUser?.id);
+        setIsVisitor(visitorMode);
+
+        if (visitorMode) {
+          // Public profile view
+          const res = await API.get(`/users/${id}`);
+          const data = res.data.data;
+          setProfileUser(data);
+          setPortfolio(data.portfolio || []);
+          setEndorsements(data.endorsements || []);
+          setReviews(data.reviews || []);
+          setMySkills(data.skills || []);
+        } else {
+          // My own private profile view
+          setProfileUser(currentUser);
+          const [portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
+            API.get('/portfolio'),
+            API.get('/endorsements/all'), 
+            API.get('/reviews/my'),
+            API.get('/skills')
+          ]);
+          setPortfolio(portfolioRes.data.data || []);
+          setEndorsements(endorseRes.data.data || []);
+          setReviews(reviewRes.data.data || []);
+          const allSkills = skillsRes.data.data || skillsRes.data || [];
+          setMySkills(allSkills.filter(s => {
+            const sid = s.user_id?._id || s.user_id;
+            return sid?.toString() === (currentUser?._id || currentUser?.id)?.toString();
+          }));
+        }
       } catch (err) { console.error(err); } 
       finally { setLoading(false); }
     };
     fetchProfileData();
-  }, [user.id]);
+  }, [id, currentUser?.id]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -138,23 +161,25 @@ function Profile() {
         <div className="hero-bg"></div>
         <div className="hero-details">
           <div className="avatar-wrapper">
-             <div className="avatar-lg-v2">{user?.name[0]}</div>
+             <div className="avatar-lg-v2">{profileUser?.name?.[0]}</div>
              {/* <div className="online-badge"></div> */}
           </div>
           <div className="user-main-info">
-            <h2 title="Verified Student Portfolio">{user?.name}</h2>
+            <h2 title="Verified Student Portfolio">{profileUser?.name}</h2>
             <div className="hero-actions">
                <span className="user-title-badge"><Award size={18} /> Rising Talent</span>
-               <span className="user-title-badge" style={{ background: '#eff6ff', color: '#2b6777' }}><MapPin size={16} /> Bengaluru Campus</span>
+               {profileUser?.college && <span className="user-title-badge" style={{ background: '#eff6ff', color: '#2b6777' }}><MapPin size={16} /> {profileUser.college}</span>}
             </div>
             <p style={{ color: '#64748b', fontSize: '1.25rem', fontWeight: '500', maxWidth: '600px', lineHeight: 1.6 }}>
-               {user?.bio || "No bio set. Showcase your student identity for better matches."}
+               {profileUser?.bio || "No bio set. Showcase your student identity for better matches."}
             </p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingBottom: '1rem' }}>
-             <button className="btn-icon-action" onClick={() => setShowEditModal(true)} title="Customize Profile"><Edit3 size={24} /></button>
-             <button className="btn-icon-action" title="Verify Badges"><Award size={24} /></button>
-          </div>
+          {!isVisitor && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingBottom: '1rem' }}>
+              <button className="btn-icon-action" onClick={() => setShowEditModal(true)} title="Customize Profile"><Edit3 size={24} /></button>
+              <button className="btn-icon-action" title="Verify Badges"><Award size={24} /></button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -163,11 +188,11 @@ function Profile() {
         <aside className="sidebar-glass">
            <div className="sidebar-card">
               <h3><Mail /> Student Credentials</h3>
-              <div className="contact-row"><Mail size={18} /> {user?.email}</div>
-              <div className="contact-row"><Globe size={18} /> Portfolio: {user?.year} Batch</div>
+              <div className="contact-row"><Mail size={18} /> {profileUser?.email}</div>
+              <div className="contact-row"><Globe size={18} /> Portfolio: {profileUser?.year || '2024'} Batch</div>
               <div className="contact-row" style={{ marginTop: '1.5rem', color: '#2b6777' }}>
-                {user?.github_url && <a href={user.github_url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}><Github /></a>}
-                {user?.linkedin_url && <a href={user.linkedin_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', marginLeft: '1rem' }}><Linkedin /></a>}
+                {profileUser?.github_url && <a href={profileUser.github_url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}><Github /></a>}
+                {profileUser?.linkedin_url && <a href={profileUser.linkedin_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', marginLeft: '1rem' }}><Linkedin /></a>}
               </div>
            </div>
 
@@ -209,12 +234,12 @@ function Profile() {
             </nav>
 
             <div className="tab-pane">
-               {activeTab === 'portfolio' && (
-                 <div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                      <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>Featured Projects</h3>
-                      <button className="add-btn" onClick={() => setShowProjectModal(true)} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> New Entry</button>
-                   </div>
+                {activeTab === 'portfolio' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                       <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>Featured Projects</h3>
+                       {!isVisitor && <button className="add-btn" onClick={() => setShowProjectModal(true)} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> New Entry</button>}
+                    </div>
                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                        {portfolio.length === 0 ? <div className="empty-box" style={{ width: '100%', gridColumn: '1 / -1' }}>Add your first project to the spotlight.</div> : 
                          portfolio.map(p => (
@@ -228,7 +253,7 @@ function Profile() {
                                     {p.github_link && <a href={p.github_link} target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Github size={14} /> CODE</a>}
                                  </div>
                               </div>
-                              <button onClick={() => handleDeleteProject(p.id)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'rgba(255,255,255,0.95)', color: '#ef4444', border: 'none', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', zIndex: 5, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}><Trash2 size={16} /></button>
+                              {!isVisitor && <button onClick={() => handleDeleteProject(p.id)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'rgba(255,255,255,0.95)', color: '#ef4444', border: 'none', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', zIndex: 5, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}><Trash2 size={16} /></button>}
                            </div>
                          ))
                        }
@@ -236,12 +261,12 @@ function Profile() {
                  </div>
                )}
 
-               {activeTab === 'skills' && (
-                 <div>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                     <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>My Skills</h3>
-                     <button className="add-btn" onClick={openAddSkill} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> Add Skill</button>
-                   </div>
+                {activeTab === 'skills' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                      <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>{isVisitor ? `${profileUser?.name}'s Skills` : 'My Skills'}</h3>
+                      {!isVisitor && <button className="add-btn" onClick={openAddSkill} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> Add Skill</button>}
+                    </div>
 
                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                      {/* Offering Column */}
@@ -259,8 +284,8 @@ function Profile() {
                                {skill.category && <span className="skill-category">{skill.category}</span>}
                              </div>
                              <div className="my-skill-actions">
-                               <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>
-                               <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>
+                               {!isVisitor && <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>}
+                               {!isVisitor && <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>}
                              </div>
                            </div>
                          ))
@@ -282,8 +307,8 @@ function Profile() {
                                {skill.category && <span className="skill-category">{skill.category}</span>}
                              </div>
                              <div className="my-skill-actions">
-                               <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>
-                               <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>
+                               {!isVisitor && <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>}
+                               {!isVisitor && <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>}
                              </div>
                            </div>
                          ))

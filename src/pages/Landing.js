@@ -54,14 +54,52 @@ function SkillPreviewCard({ person, delay }) {
 function Landing({ initialModal = null }) {
   const [activeOffering, setActiveOffering] = useState(0);
   const [activeSeeking, setActiveSeeking] = useState(0);
+  
+  const [dbStats, setDbStats] = useState({ users: '500+', skills: '1200+', collaborations: '350+' });
+  const [dynamicOffers, setDynamicOffers] = useState(offerExamples);
+  const [dynamicSeeks, setDynamicSeeks] = useState(seekExamples);
 
   // Auth Modal State
   const [showModal, setShowModal] = useState(initialModal); // 'login' or 'register'
-  const [authData, setAuthData] = useState({ name: '', email: '', password: '' });
+  const [authData, setAuthData] = useState({ 
+    name: '', email: '', password: '',
+    college: '', department: '', year: '1st Year'
+  });
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLandingData = async () => {
+      try {
+        const [usersRes, skillsRes] = await Promise.all([
+          API.get('/users?limit=10'),
+          API.get('/skills?limit=10')
+        ]);
+        
+        const allUsers = usersRes.data.data || [];
+        const allSkills = skillsRes.data.data || [];
+        
+        if (allUsers.length > 0) {
+          setDbStats(prev => ({ ...prev, users: `${allUsers.length}+` }));
+          // Use real users as examples if available
+          const realOffers = allUsers.slice(0, 4).map((u, i) => ({
+            name: u.name,
+            skill: u.department || 'Student',
+            badge: 'Member',
+            color: offerExamples[i % 4].color
+          }));
+          setDynamicOffers(realOffers);
+        }
+        
+        if (allSkills.length > 0) {
+          setDbStats(prev => ({ ...prev, skills: `${allSkills.length}+` }));
+        }
+      } catch (err) { console.error('Landing fetch error:', err); }
+    };
+    fetchLandingData();
+  }, []);
 
   useEffect(() => {
     if (initialModal) setShowModal(initialModal);
@@ -69,11 +107,11 @@ function Landing({ initialModal = null }) {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveOffering(p => (p + 1) % offerExamples.length);
-      setActiveSeeking(p => (p + 1) % seekExamples.length);
+      setActiveOffering(p => (p + 1) % dynamicOffers.length);
+      setActiveSeeking(p => (p + 1) % dynamicSeeks.length);
     }, 2500);
     return () => clearInterval(timer);
-  }, []);
+  }, [dynamicOffers, dynamicSeeks]);
 
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
@@ -144,12 +182,18 @@ function Landing({ initialModal = null }) {
 
       {/* ── STATS BAR ────────────────────────── */}
       <section className="stats-bar">
-        {stats.map((stat, i) => (
-          <div key={i} className="stat-item">
-            <div className="stat-value">{stat.value}</div>
-            <div className="stat-label">{stat.label}</div>
-          </div>
-        ))}
+        <div className="stat-item">
+          <div className="stat-value">{dbStats.users}</div>
+          <div className="stat-label">Active Students</div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-value">{dbStats.skills}</div>
+          <div className="stat-label">Skills Listed</div>
+        </div>
+        <div className="stat-item">
+          <div className="stat-value">{dbStats.collaborations}</div>
+          <div className="stat-label">Collaborations</div>
+        </div>
       </section>
 
       {/* ── SKILL SPLIT SECTION ──────────────── */}
@@ -170,7 +214,7 @@ function Landing({ initialModal = null }) {
               </div>
             </div>
             <div className="panel-cards">
-              {offerExamples.map((p, i) => (
+              {dynamicOffers.map((p, i) => (
                 <SkillPreviewCard key={i} person={p} delay={i * 0.1} />
               ))}
             </div>
@@ -198,7 +242,7 @@ function Landing({ initialModal = null }) {
               </div>
             </div>
             <div className="panel-cards">
-              {seekExamples.map((p, i) => (
+              {dynamicSeeks.map((p, i) => (
                 <SkillPreviewCard key={i} person={p} delay={i * 0.1} />
               ))}
             </div>
@@ -288,31 +332,69 @@ function Landing({ initialModal = null }) {
       {/* ── AUTH MODAL (POPUP) ───────────────── */}
       {showModal && (
         <div className="modal-overlay" style={{ zIndex: 9999 }}>
-          <div className="modal-content" style={{ maxWidth: '400px', width: '100%' }}>
+          <div className="modal-content" style={{ maxWidth: '540px', width: '100%' }}>
             <div className="modal-header">
               <h2>{showModal === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
               <button className="close-btn" onClick={() => { setShowModal(null); setAuthError(''); }}><Award style={{ opacity: 0 }} /> ✕</button>
             </div>
             {authError && <div style={{ color: '#ef4444', marginBottom: '1.25rem', fontWeight: '800', textAlign: 'center', background: '#fef2f2', padding: '0.75rem', borderRadius: '12px' }}>{authError}</div>}
             
-            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {showModal === 'register' && (
-                <div className="form-field">
-                  <label>FULL NAME</label>
-                  <input type="text" placeholder="John Doe" value={authData.name} onChange={e => setAuthData({...authData, name: e.target.value})} className="input-premium" required />
-                </div>
-              )}
-              <div className="form-field">
-                <label>STUDENT EMAIL</label>
-                <input type="email" placeholder="name@student.edu" value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} className="input-premium" required />
-              </div>
-              <div className="form-field">
-                <label>PASSWORD</label>
-                <input type="password" placeholder="••••••••" value={authData.password} onChange={e => setAuthData({...authData, password: e.target.value})} className="input-premium" required />
-              </div>
+            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {showModal === 'register' ? (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-field">
+                      <label>FULL NAME</label>
+                      <input type="text" placeholder="Harini N" value={authData.name} onChange={e => setAuthData({...authData, name: e.target.value})} className="input-premium" required />
+                    </div>
+                    <div className="form-field">
+                      <label>STUDENT EMAIL</label>
+                      <input type="email" placeholder="name@student.edu" value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} className="input-premium" required />
+                    </div>
+                  </div>
 
-              <button type="submit" className="btn-hero-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }} disabled={loading}>
-                {loading ? 'Accessing...' : (showModal === 'login' ? 'Login' : 'Join SkillBridge')}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-field">
+                      <label>COLLEGE / INSTITUTION</label>
+                      <input type="text" placeholder="Amrita Vishwa..." value={authData.college} onChange={e => setAuthData({...authData, college: e.target.value})} className="input-premium" required />
+                    </div>
+                    <div className="form-field">
+                      <label>DEPARTMENT</label>
+                      <input type="text" placeholder="Engineering" value={authData.department} onChange={e => setAuthData({...authData, department: e.target.value})} className="input-premium" required />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-field">
+                      <label>STUDENT YEAR</label>
+                      <select name="year" value={authData.year} onChange={e => setAuthData({...authData, year: e.target.value})} className="input-premium" style={{ height: '48px', padding: '0 1rem' }}>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                      </select>
+                    </div>
+                    <div className="form-field">
+                      <label>CHOOSE PASSWORD</label>
+                      <input type="password" placeholder="••••••••" value={authData.password} onChange={e => setAuthData({...authData, password: e.target.value})} className="input-premium" required />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="form-field">
+                    <label>STUDENT EMAIL</label>
+                    <input type="email" placeholder="name@student.edu" value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} className="input-premium" required />
+                  </div>
+                  <div className="form-field">
+                    <label>PASSWORD</label>
+                    <input type="password" placeholder="••••••••" value={authData.password} onChange={e => setAuthData({...authData, password: e.target.value})} className="input-premium" required />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className="btn-hero-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem', minHeight: '52px' }} disabled={loading}>
+                {loading ? 'Accessing...' : (showModal === 'login' ? 'Sign In' : 'Join Community')}
               </button>
             </form>
 

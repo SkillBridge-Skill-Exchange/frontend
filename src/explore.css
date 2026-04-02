@@ -1,8 +1,8 @@
 /* --- Explore Page Layout --- */
 .explore-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  gap: 2.5rem;
+  grid-template-columns: 320px 1fr;
+  gap: 3.5rem;
   align-items: flex-start;
 }
 
@@ -102,8 +102,8 @@
 
 .skills-grid-premium {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.5rem;
 }
 
 /* --- Premium SkillCard --- */
@@ -115,6 +115,7 @@
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(255,255,255,0.8);
+  aspect-ratio: 1 / 1;
 }
 
 .skill-card.premium:hover {
@@ -229,4 +230,23 @@
   text-align: center;
   padding: 8rem 0;
   color: var(--text-muted);
+}
+
+/* Portfolio Card Specifics */
+.portfolio-card .avatar-lg {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(43, 103, 119, 0.2);
+}
+
+.portfolio-card:hover .avatar-lg {
+  transform: scale(1.05);
+}
+
+.portfolio-card .card-footer .icon-btn {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

@@ -19,6 +19,7 @@ import Landing from './pages/Landing';
 import Notifications from './pages/Notifications';
 import Requests from './pages/Requests';
 import Leaderboard from './pages/Leaderboard';
+import Students from './pages/Students';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -45,11 +46,13 @@ function AppContent() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/messaging" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/add-skill" element={<ProtectedRoute><AddSkill /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
           <Route path="/skills" element={<ProtectedRoute><Skills /></ProtectedRoute>} />
+          <Route path="/collaborate" element={<ProtectedRoute><Students /></ProtectedRoute>} />
           
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/landing" />} />
