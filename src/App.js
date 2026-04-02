@@ -37,11 +37,9 @@ function AppContent() {
       <div className="app">
         <Navbar />
         <Routes>
-          {/* Public Routes */}
           <Route path="/landing" element={<Landing />} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/skills" element={<Skills />} />
+          <Route path="/login" element={<PublicRoute><Landing initialModal="login" /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Landing initialModal="register" /></PublicRoute>} />
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -51,6 +49,7 @@ function AppContent() {
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+          <Route path="/skills" element={<ProtectedRoute><Skills /></ProtectedRoute>} />
           
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/landing" />} />

@@ -97,7 +97,6 @@ function Navbar() {
           ) : (
             <>
               <Link to="/landing" className="nav-link-simple">Home</Link>
-              <Link to="/skills" className="nav-link-simple">Browse</Link>
               <Link to="/login" className="nav-link-simple">Login</Link>
               <Link to="/register" className="btn-join">Join Community</Link>
             </>
