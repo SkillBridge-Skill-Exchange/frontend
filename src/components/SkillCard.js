@@ -61,10 +61,9 @@ function SkillCard({ skill, currentUser, onDelete }) {
     setReviewing(true);
     try {
       await API.post('/reviews', {
-        skill_id: skill.id || skill._id,
         rating: reviewRating,
         comment: reviewComment,
-        reviewee_id: skill.user_id || skill.owner?._id || skill.user?._id
+        reviewed_user_id: skill.user_id || skill.owner?._id || skill.user?._id
       });
       setReviewed(true);
       setShowReviewModal(false);
