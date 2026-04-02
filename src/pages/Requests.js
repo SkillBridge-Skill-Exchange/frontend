@@ -12,6 +12,7 @@ import {
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
   User, MessageCircle, ChevronDown 
 } from 'lucide-react';
+import './requests.css';
 
 function Requests() {
   const [requests, setRequests] = useState({ sent: [], received: [] });

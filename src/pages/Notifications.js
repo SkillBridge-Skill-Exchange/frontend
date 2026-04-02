@@ -11,6 +11,7 @@ import {
   Bell, BellOff, CheckCircle, UserPlus, MessageCircle, 
   Award, Sparkles, Clock, Check 
 } from 'lucide-react';
+import './notifications.css';
 
 const typeIcons = {
   match: <Sparkles size={20} />,
@@ -122,7 +123,7 @@ function Notifications() {
               className={`notif-item ${n.is_read ? '' : 'unread'}`}
               onClick={() => markAsRead(n.id)}
             >
-              <div className="notif-icon" style={{ background: `${typeColors[n.type]}15`, color: typeColors[n.type] }}>
+              <div className="notif-icon" data-type={n.type}>
                 {typeIcons[n.type] || <Bell size={20} />}
               </div>
               <div className="notif-body">

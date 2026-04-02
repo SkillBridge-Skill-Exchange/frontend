@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import {
   Sparkles, Users, MessageCircle, TrendingUp, Award,
   Star, ArrowRight, Zap, Shield, BarChart3, Brain,
-  BookOpen, Handshake, ChevronRight
+  BookOpen, Handshake, ChevronRight, Bell
 } from 'lucide-react';
 
 const features = [
@@ -68,6 +69,7 @@ function Landing({ initialModal = null }) {
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { showMatch, showRequest } = useNotifications();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -136,6 +138,19 @@ function Landing({ initialModal = null }) {
 
   return (
     <div className="landing-page">
+
+      {/* Demo Notification Button */}
+      <button 
+        className="demo-notif-trigger"
+        onClick={() => {
+          showMatch('Sarah M. matches your React skills at 94%');
+          setTimeout(() => showRequest('Alex wants to collaborate on Python ML'), 2000);
+        }}
+        title="Click to see notification demo"
+      >
+        <Bell size={20} />
+        <span>Try Notifications</span>
+      </button>
 
       {/* ── HERO ────────────────────────────── */}
       <section className="landing-hero">
@@ -261,6 +276,45 @@ function Landing({ initialModal = null }) {
           <h2>Everything You Need to <span className="gradient-text">Collaborate</span></h2>
           <p>Powerful features designed to make campus skill exchange seamless and productive.</p>
         </div>
+
+        {/* SKILL LEVEL BADGES SHOWCASE */}
+        <div className="badges-showcase">
+          <div className="badges-showcase-title">
+            <Award size={24} style={{ color: '#52ab98' }} />
+            <span>Skill Level System</span>
+          </div>
+          <div className="badges-row">
+            <div className="badge-showcase-item beginner-showcase">
+              <div className="badge-showcase-icon">
+                <Star size={28} />
+              </div>
+              <div className="badge-showcase-label">Beginner</div>
+              <div className="badge-showcase-desc">Just starting out</div>
+            </div>
+            <div className="badge-showcase-item intermediate-showcase">
+              <div className="badge-showcase-icon">
+                <Zap size={28} />
+              </div>
+              <div className="badge-showcase-label">Intermediate</div>
+              <div className="badge-showcase-desc">Building expertise</div>
+            </div>
+            <div className="badge-showcase-item advanced-showcase">
+              <div className="badge-showcase-icon">
+                <Award size={28} />
+              </div>
+              <div className="badge-showcase-label">Advanced</div>
+              <div className="badge-showcase-desc">Highly skilled</div>
+            </div>
+            <div className="badge-showcase-item expert-showcase">
+              <div className="badge-showcase-icon">
+                <Sparkles size={28} />
+              </div>
+              <div className="badge-showcase-label">Expert</div>
+              <div className="badge-showcase-desc">Master level</div>
+            </div>
+          </div>
+        </div>
+
         <div className="features-grid">
           {features.map((feat, i) => (
             <div key={i} className="feature-card" style={{ animationDelay: `${i * 0.1}s` }}>

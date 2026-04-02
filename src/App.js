@@ -20,7 +20,9 @@ import Notifications from './pages/Notifications';
 import Requests from './pages/Requests';
 import Leaderboard from './pages/Leaderboard';
 import Students from './pages/Students';
+import NotificationToastContainer from './components/NotificationToast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -37,6 +39,7 @@ function AppContent() {
     <Router>
       <div className="app">
         <Navbar />
+        <NotificationToastContainer />
         <Routes>
           <Route path="/landing" element={<Landing />} />
           <Route path="/login" element={<PublicRoute><Landing initialModal="login" /></PublicRoute>} />
@@ -66,7 +69,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

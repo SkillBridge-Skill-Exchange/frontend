@@ -10,18 +10,21 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import { Link } from 'react-router-dom';
 import { 
   TrendingUp, Users, MessageCircle, Sparkles, BarChart3, 
   Trophy, Award, Star, ArrowRight, Percent, Brain, 
-  CheckCircle, Clock, Send, Zap, Activity, Medal
+  CheckCircle, Clock, Send, Zap, Activity, Medal, Bell
 } from 'lucide-react';
+import '../features.css';
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { showMatch, showRequest, showEndorsement, showMessage } = useNotifications();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -60,8 +63,40 @@ function Dashboard() {
     <div className="page dashboard-page">
       {/* HERO */}
       <div className="dashboard-hero">
-        <h1>Welcome back, {user?.name}! <TrendingUp size={36} color="#52ab98" /></h1>
-        <p>Track your student activity and discover what's trending on campus.</p>
+        <div>
+          <h1>Welcome back, {user?.name}! <TrendingUp size={36} color="#52ab98" /></h1>
+          <p>Track your student activity and discover what's trending on campus.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button 
+            onClick={() => showMatch('Sarah M. matches your React skills at 94%')}
+            className="demo-notif-btn match"
+            title="Demo: Match Notification"
+          >
+            <Sparkles size={18} /> Match
+          </button>
+          <button 
+            onClick={() => showRequest('Alex wants to learn Python from you')}
+            className="demo-notif-btn request"
+            title="Demo: Request Notification"
+          >
+            <Send size={18} /> Request
+          </button>
+          <button 
+            onClick={() => showEndorsement('John endorsed your UI/UX Design skills')}
+            className="demo-notif-btn endorsement"
+            title="Demo: Endorsement Notification"
+          >
+            <Award size={18} /> Endorse
+          </button>
+          <button 
+            onClick={() => showMessage('New message from Maria about the project')}
+            className="demo-notif-btn message"
+            title="Demo: Message Notification"
+          >
+            <MessageCircle size={18} /> Message
+          </button>
+        </div>
       </div>
 
       {/* STATS GRID (4 cards) */}

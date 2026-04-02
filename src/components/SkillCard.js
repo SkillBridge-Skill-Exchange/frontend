@@ -8,10 +8,42 @@ import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, CheckCircle, Br
 import API from '../api';
 
 const badgeConfig = {
-  beginner: { label: 'Beginner', color: '#3b82f6', bg: '#eff6ff', icon: <Star size={12} /> },
-  intermediate: { label: 'Intermediate', color: '#f59e0b', bg: '#fef3c7', icon: <Zap size={12} /> },
-  advanced: { label: 'Advanced', color: '#8b5cf6', bg: '#f3e8ff', icon: <Award size={12} /> },
-  expert: { label: 'Expert', color: '#ef4444', bg: '#fee2e2', icon: <Layers size={12} /> },
+  beginner: { 
+    label: 'Beginner', 
+    color: '#1e40af', 
+    bg: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 
+    border: '#60a5fa',
+    icon: <Star size={16} />,
+    shadow: '0 6px 20px rgba(59,130,246,0.3)',
+    glow: 'rgba(59,130,246,0.4)'
+  },
+  intermediate: { 
+    label: 'Intermediate', 
+    color: '#d97706', 
+    bg: 'linear-gradient(135deg, #fef3c7 0%, #fde047 100%)', 
+    border: '#facc15',
+    icon: <Zap size={16} />,
+    shadow: '0 6px 20px rgba(245,158,11,0.3)',
+    glow: 'rgba(245,158,11,0.4)'
+  },
+  advanced: { 
+    label: 'Advanced', 
+    color: '#7c3aed', 
+    bg: 'linear-gradient(135deg, #f3e8ff 0%, #d8b4fe 100%)', 
+    border: '#c084fc',
+    icon: <Award size={16} />,
+    shadow: '0 6px 20px rgba(139,92,246,0.3)',
+    glow: 'rgba(139,92,246,0.4)'
+  },
+  expert: { 
+    label: 'Expert', 
+    color: '#dc2626', 
+    bg: 'linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%)', 
+    border: '#f87171',
+    icon: <Layers size={16} />,
+    shadow: '0 6px 20px rgba(239,68,68,0.3)',
+    glow: 'rgba(239,68,68,0.4)'
+  },
 };
 
 function SkillCard({ skill, currentUser, onDelete }) {
@@ -87,8 +119,44 @@ function SkillCard({ skill, currentUser, onDelete }) {
         <div className="card-body">
           <h3>{skill.skill_name}</h3>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.8rem', borderRadius: '8px', background: level.bg, color: level.color, fontSize: '0.75rem', fontWeight: 800 }}>
-            {level.icon} {level.label}
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '0.6rem', 
+            padding: '0.65rem 1.25rem', 
+            borderRadius: '14px', 
+            background: level.bg, 
+            color: level.color, 
+            fontSize: '0.85rem', 
+            fontWeight: 950,
+            border: `2px solid ${level.border}`,
+            boxShadow: level.shadow,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease'
+          }}
+          className="skill-level-badge"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = `0 8px 30px ${level.glow}`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = level.shadow;
+          }}
+          >
+            <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {level.icon} {level.label}
+            </span>
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.3), transparent)',
+              opacity: 0,
+              transition: 'opacity 0.3s ease'
+            }} className="badge-shine" />
           </div>
 
           {skill.description ? (

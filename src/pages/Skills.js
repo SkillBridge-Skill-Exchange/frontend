@@ -3,6 +3,7 @@ import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import SkillCard from '../components/SkillCard';
 import { Search, Filter, Briefcase, HandHeart, UserCircle } from 'lucide-react';
+import '../explore.css';
 
 function Skills() {
   const [skills, setSkills] = useState([]);

@@ -3,6 +3,7 @@ import API from '../api';
 import PortfolioCard from '../components/PortfolioCard';
 import { useAuth } from '../context/AuthContext';
 import { Search, Filter, GraduationCap, Users } from 'lucide-react';
+import '../explore.css';
 
 function Students() {
   const [students, setStudents] = useState([]);
