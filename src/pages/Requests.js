@@ -12,6 +12,7 @@ import {
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
   User, MessageCircle, ChevronDown 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function Requests() {
   const [requests, setRequests] = useState({ sent: [], received: [] });
@@ -20,6 +21,24 @@ function Requests() {
   const [showReview, setShowReview] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStartChat = async (recipientId) => {
+    if (!recipientId) {
+      navigate('/messaging');
+      return;
+    }
+    try {
+      await API.post('/messages', { 
+        recipient_id: recipientId, 
+        content: "Hi! Let's chat." 
+      });
+      navigate('/messaging');
+    } catch (err) {
+      console.error(err);
+      navigate('/messaging');
+    }
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -124,7 +143,7 @@ function Requests() {
               )}
               {r.status === 'accepted' && (
                 <div className="req-accepted-actions">
-                  <button className="req-btn chat" onClick={() => {}}>
+                  <button className="req-btn chat" onClick={() => handleStartChat(r.requester?._id || r.requester?.id)}>
                     <MessageCircle size={16} /> Chat
                   </button>
                   <button className="req-btn review" onClick={() => setShowReview(r.id)}>
@@ -186,6 +205,13 @@ function Requests() {
               <div className="req-status" style={{ background: statusConfig[r.status].bg, color: statusConfig[r.status].color }}>
                 {statusConfig[r.status].icon} {statusConfig[r.status].label}
               </div>
+              {r.status === 'accepted' && (
+                <div className="req-accepted-actions" style={{ marginTop: '0.75rem' }}>
+                  <button className="req-btn chat" onClick={() => handleStartChat(r.skill?.owner?._id || r.skill?.owner?.id)}>
+                    <MessageCircle size={16} /> Chat
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}

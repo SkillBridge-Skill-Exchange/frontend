@@ -10,6 +10,8 @@ function Messaging() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const { user } = useAuth();
+  
+  const currentUserId = String(user?.id || user?._id);
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -33,7 +35,10 @@ function Messaging() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !activeChat) return;
-    const recipient_id = activeChat.user1_id === user.id ? activeChat.user2_id : activeChat.user1_id;
+    
+    const user1Id = String(activeChat.user1?._id || activeChat.user1?.id || activeChat.user1_id);
+    const recipient_id = user1Id === currentUserId ? activeChat.user2_id : activeChat.user1_id;
+    
     try {
       const res = await API.post('/messages', { recipient_id, content: newMessage });
       setMessages([...messages, res.data.data]);
@@ -42,7 +47,8 @@ function Messaging() {
   };
 
   const getChatPartner = (conv) => {
-    return conv.user1_id === user.id ? conv.user2 : conv.user1;
+    const user1Id = String(conv.user1?._id || conv.user1?.id || conv.user1_id);
+    return user1Id === currentUserId ? conv.user2 : conv.user1;
   };
 
   if (loading) return <div className="page" style={{ color: 'white', textAlign: 'center', paddingTop: '10rem' }}>Opening campus portal...</div>;
@@ -91,7 +97,7 @@ function Messaging() {
               </div>
               <div className="msg-list">
                 {messages.map((m) => (
-                  <div key={m.id} className={`msg-bubble ${m.sender_id === user.id ? 'sent' : 'received'}`}>
+                  <div key={m.id} className={`msg-bubble ${String(m.sender_id) === currentUserId ? 'sent' : 'received'}`}>
                     {m.content}
                   </div>
                 ))}
