@@ -21,7 +21,8 @@ function Login() {
     setError('');
     try {
       const res = await API.post('/auth/login', formData);
-      login(res.data.token, res.data.user);
+      const { token, user } = res.data.data;
+      login(token, user);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

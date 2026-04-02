@@ -1,13 +1,10 @@
 /**
- * Enhanced SkillCard Component
+ * Premium SkillCard Component
  * ==============================
- * Includes skill level badges (Beginner/Intermediate/Expert),
- * collaboration request button, and endorsement count.
- * Task Owners: B Rahul (Skill level badges), Harini N (Skill listing)
  */
 
 import React, { useState } from 'react';
-import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers } from 'lucide-react';
+import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, CheckCircle } from 'lucide-react';
 import API from '../api';
 
 const badgeConfig = {
@@ -29,7 +26,7 @@ function SkillCard({ skill, currentUser, onDelete }) {
     setRequesting(true);
     try {
       await API.post('/requests', { 
-        skill_id: skill.id, 
+        skill_id: skill.id || skill._id, 
         message: `I'd like to collaborate on ${skill.skill_name}!` 
       });
       setRequested(true);
@@ -43,7 +40,7 @@ function SkillCard({ skill, currentUser, onDelete }) {
     setEndorsing(true);
     try {
       await API.post('/endorsements', { 
-        skill_id: skill.id, 
+        skill_id: skill.id || skill._id, 
         comment: `Great ${skill.skill_name} skills!` 
       });
       setEndorsed(true);
@@ -54,65 +51,64 @@ function SkillCard({ skill, currentUser, onDelete }) {
   };
 
   return (
-    <div className="skill-card">
-      {/* CARD TOP */}
+    <div className="skill-card premium">
       <div className="card-top">
-        <span className={`type-tag ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`}>
+        <span className={`type-ribbon ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`}>
           {skill.type === 'offer' ? '🎯 OFFERING' : '🔍 SEEKING'}
         </span>
-        <span className="category-tag">{(skill.category || 'General').substring(0, 12).toUpperCase()}</span>
+        <span className="category-pill">{(skill.category || 'General').substring(0, 15).toUpperCase()}</span>
       </div>
 
-      {/* CARD BODY */}
       <div className="card-body">
         <h3>{skill.skill_name}</h3>
         
-        {/* SKILL LEVEL BADGE */}
-        <div className="skill-badge" style={{ background: level.bg, color: level.color }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.8rem', borderRadius: '8px', background: level.bg, color: level.color, fontSize: '0.75rem', fontWeight: 800 }}>
           {level.icon} {level.label}
         </div>
 
-        {skill.description && (
-          <p className="skill-description">{skill.description}</p>
+        {skill.description ? (
+          <p className="description-text">{skill.description}</p>
+        ) : (
+          <p className="description-text" style={{ fontStyle: 'italic', opacity: 0.6 }}>No detailed description provided.</p>
         )}
       </div>
 
-      {/* CARD FOOTER */}
       <div className="card-footer">
-        <div className="user-info-sm">
-          <div className="avatar-xs">
+        <div className="user-overview">
+          <div className="avatar-med">
             {skill.user?.name?.[0]?.toUpperCase() || skill.owner?.name?.[0]?.toUpperCase() || 'U'}
           </div>
-          <div className="user-meta">
-            <span className="name">{skill.user?.name || skill.owner?.name || 'Student'}</span>
-            <span className="year">Student • {skill.user?.year || skill.owner?.year || 'Unknown'}</span>
+          <div>
+            <div className="user-name">{skill.user?.name || skill.owner?.name || 'Student'}</div>
+            <div className="user-subline">{skill.user?.college || skill.owner?.college || 'University Partner'}</div>
           </div>
         </div>
         
-        <div className="card-actions-row">
+        <div className="card-actions">
           {!isOwnSkill && currentUser && (
             <>
               <button 
-                className={`card-action-btn endorse ${endorsed ? 'done' : ''}`}
+                className={`icon-btn secondary ${endorsed ? 'endorsed-active' : ''}`}
                 onClick={handleEndorse}
                 disabled={endorsing || endorsed}
                 title="Endorse this skill"
+                style={{ background: endorsed ? '#ecfdf5' : '', borderColor: endorsed ? '#52ab98' : '', color: endorsed ? '#52ab98' : '' }}
               >
-                <ThumbsUp size={14} />
+                {endorsed ? <CheckCircle size={18} /> : <ThumbsUp size={18} />}
               </button>
               <button 
-                className={`card-action-btn request ${requested ? 'done' : ''}`}
+                className={`icon-btn primary ${requested ? 'requested-active' : ''}`}
                 onClick={handleRequest}
                 disabled={requesting || requested}
                 title="Request collaboration"
               >
-                {requested ? <span>✓</span> : <Send size={14} />}
+                {requested ? <CheckCircle size={18} /> : <Send size={18} />}
               </button>
             </>
           )}
           {isOwnSkill && (
-            <button className="btn-trash" onClick={() => onDelete(skill.id)}>
-              <Trash2 size={16} />
+            <button className="icon-btn danger" onClick={() => onDelete(skill.id || skill._id)} title="Remove Skill">
+              <Trash2 size={18} />
             </button>
           )}
         </div>

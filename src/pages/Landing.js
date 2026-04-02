@@ -1,24 +1,20 @@
-/**
- * Landing Page
- * =============
- * Public-facing hero page with animated sections and feature highlights.
- * Task Owner: B Rahul (UI/UX, Landing Page)
- */
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Sparkles, Users, MessageCircle, TrendingUp, Award, 
-  Star, ArrowRight, Zap, Shield, BarChart3, Brain 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '../api';
+import { useAuth } from '../context/AuthContext';
+import {
+  Sparkles, Users, MessageCircle, TrendingUp, Award,
+  Star, ArrowRight, Zap, Shield, BarChart3, Brain,
+  BookOpen, Handshake, ChevronRight
 } from 'lucide-react';
 
 const features = [
-  { icon: <Brain size={28} />, title: 'AI Skill Matching', desc: 'Our cosine similarity engine matches you with the perfect collaborators based on complementary skills.' },
-  { icon: <Users size={28} />, title: 'Peer Endorsements', desc: 'Get your skills validated by peers who\'ve worked with you. Build credibility through community trust.' },
-  { icon: <MessageCircle size={28} />, title: 'In-App Chat', desc: 'Connect instantly with matched students. Discuss projects and plan collaborations in real-time.' },
-  { icon: <Award size={28} />, title: 'Skill Badges', desc: 'Earn Beginner, Intermediate, and Expert badges that showcase your proficiency levels.' },
-  { icon: <BarChart3 size={28} />, title: 'Activity Dashboard', desc: 'Track your progress with interactive charts showing in-demand skills and contribution metrics.' },
-  { icon: <Star size={28} />, title: 'Reviews & Ratings', desc: 'Rate collaborators after projects. Build a reputation that attracts more opportunities.' },
+  { icon: <Brain size={28} />, title: 'AI Skill Matching', desc: 'Cosine similarity engine finds your perfect collaborators instantly.' },
+  { icon: <Users size={28} />, title: 'Peer Endorsements', desc: 'Build credibility through community validation of your skills.' },
+  { icon: <MessageCircle size={28} />, title: 'In-App Chat', desc: 'Connect and discuss projects in real-time with matched students.' },
+  { icon: <Award size={28} />, title: 'Skill Badges', desc: 'Earn Beginner, Intermediate, and Expert level badges.' },
+  { icon: <BarChart3 size={28} />, title: 'Activity Dashboard', desc: 'Track in-demand skills and your contribution metrics.' },
+  { icon: <Star size={28} />, title: 'Reviews & Ratings', desc: 'Rate collaborators and build a reputation after projects.' },
 ];
 
 const stats = [
@@ -28,72 +24,125 @@ const stats = [
   { value: '95%', label: 'Match Accuracy' },
 ];
 
-function Landing() {
+const offerExamples = [
+  { name: 'Alice J.', skill: 'React & Next.js', badge: 'Expert', color: '#2b6777' }, // primary
+  { name: 'Rahul S.', skill: 'UI/UX Design', badge: 'Advanced', color: '#52ab98' }, // accent
+  { name: 'Meera P.', skill: 'Python ML', badge: 'Expert', color: '#1e4854' },     // dark primary
+  { name: 'Dev K.', skill: 'Node.js APIs', badge: 'Intermediate', color: '#3f8576' }, // dark accent
+];
+
+const seekExamples = [
+  { name: 'Bob M.', skill: 'App Development', badge: 'Beginner', color: '#2b6777' },
+  { name: 'Sara T.', skill: 'Data Science', badge: 'Intermediate', color: '#52ab98' },
+  { name: 'Arjun V.', skill: 'Cloud & DevOps', badge: 'Beginner', color: '#1e4854' },
+  { name: 'Priya L.', skill: 'Blockchain', badge: 'Intermediate', color: '#3f8576' },
+];
+
+function SkillPreviewCard({ person, delay }) {
+  return (
+    <div className="landing-skill-card" style={{ animationDelay: `${delay}s` }}>
+      <div className="lsc-avatar" style={{ background: person.color }}>{person.name[0]}</div>
+      <div className="lsc-info">
+        <div className="lsc-name">{person.name}</div>
+        <div className="lsc-skill">{person.skill}</div>
+      </div>
+      <span className="lsc-badge">{person.badge}</span>
+    </div>
+  );
+}
+
+function Landing({ initialModal = null }) {
+  const [activeOffering, setActiveOffering] = useState(0);
+  const [activeSeeking, setActiveSeeking] = useState(0);
+
+  // Auth Modal State
+  const [showModal, setShowModal] = useState(initialModal); // 'login' or 'register'
+  const [authData, setAuthData] = useState({ name: '', email: '', password: '' });
+  const [authError, setAuthError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialModal) setShowModal(initialModal);
+  }, [initialModal]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveOffering(p => (p + 1) % offerExamples.length);
+      setActiveSeeking(p => (p + 1) % seekExamples.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setAuthError('');
+    try {
+      if (showModal === 'login') {
+        const res = await API.post('/auth/login', { email: authData.email, password: authData.password });
+        login(res.data.data.token, res.data.data.user);
+        navigate('/dashboard');
+      } else {
+        const res = await API.post('/auth/register', authData);
+        login(res.data.data.token, res.data.data.user);
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setAuthError(err.response?.data?.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="landing-page">
-      {/* HERO SECTION */}
+
+      {/* ── HERO ────────────────────────────── */}
       <section className="landing-hero">
         <div className="hero-particles">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={`particle particle-${i + 1}`} />
-          ))}
+          {[...Array(6)].map((_, i) => <div key={i} className={`particle particle-${i + 1}`} />)}
         </div>
         <div className="hero-content">
-          <div className="hero-badge">
-            <Sparkles size={16} /> AI-Powered Skill Exchange
-          </div>
+          <div className="hero-badge"><Sparkles size={16} /> AI-Powered Skill Exchange</div>
           <h1>
-            Find Your Perfect
-            <span className="gradient-text"> Study Partner</span>
+            Bridge Your<br />
+            <span className="gradient-text">Skill Gap</span> On Campus
           </h1>
           <p className="hero-subtitle">
-            SkillBridge connects students with complementary skills using AI-powered matching. 
-            Collaborate, learn, and grow together on campus.
+            SkillBridge connects students who <strong>offer</strong> expertise with those who
+            <strong> seek</strong> to learn — powered by AI matching and peer endorsements.
           </p>
           <div className="hero-actions">
-            <Link to="/register" className="btn-hero-primary">
+            <button onClick={() => setShowModal('register')} className="btn-hero-primary">
               Get Started <ArrowRight size={20} />
-            </Link>
-            <Link to="/skills" className="btn-hero-secondary">
-              <Zap size={20} /> Explore Skills
-            </Link>
+            </button>
+            <button onClick={() => setShowModal('login')} className="btn-hero-secondary">
+              <Zap size={20} /> Sign In
+            </button>
           </div>
         </div>
         <div className="hero-visual">
           <div className="visual-card card-1">
             <div className="mini-avatar" style={{ background: '#52ab98' }}>A</div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>React Expert</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>96% Match</div>
-            </div>
-            <div className="match-ring" style={{ '--progress': '96%' }}>
-              <span>96%</span>
-            </div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>React Expert</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>96% Match</div></div>
+            <div className="match-ring" style={{ '--progress': '96%' }}><span>96%</span></div>
           </div>
           <div className="visual-card card-2">
             <div className="mini-avatar" style={{ background: '#2b6777' }}>S</div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Python ML</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>89% Match</div>
-            </div>
-            <div className="match-ring" style={{ '--progress': '89%' }}>
-              <span>89%</span>
-            </div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Python ML</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>89% Match</div></div>
+            <div className="match-ring" style={{ '--progress': '89%' }}><span>89%</span></div>
           </div>
           <div className="visual-card card-3">
             <div className="mini-avatar" style={{ background: '#e67e22' }}>M</div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>UI/UX Design</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>82% Match</div>
-            </div>
-            <div className="match-ring" style={{ '--progress': '82%' }}>
-              <span>82%</span>
-            </div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>UI/UX Design</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>82% Match</div></div>
+            <div className="match-ring" style={{ '--progress': '82%' }}><span>82%</span></div>
           </div>
         </div>
       </section>
 
-      {/* STATS BAR */}
+      {/* ── STATS BAR ────────────────────────── */}
       <section className="stats-bar">
         {stats.map((stat, i) => (
           <div key={i} className="stat-item">
@@ -103,7 +152,66 @@ function Landing() {
         ))}
       </section>
 
-      {/* FEATURES GRID */}
+      {/* ── SKILL SPLIT SECTION ──────────────── */}
+      <section className="skill-split-section">
+        <div className="section-intro">
+          <h2>Two Sides of Every <span className="gradient-text">Collaboration</span></h2>
+          <p>Every great project needs students who can teach and students who want to learn.</p>
+        </div>
+
+        <div className="skill-split-grid">
+          {/* Offering Panel */}
+          <div className="skill-panel offering-panel">
+            <div className="panel-header">
+              <div className="panel-icon offering-icon"><Zap size={24} /></div>
+              <div>
+                <h3>Offering Skills</h3>
+                <p>Students sharing their expertise</p>
+              </div>
+            </div>
+            <div className="panel-cards">
+              {offerExamples.map((p, i) => (
+                <SkillPreviewCard key={i} person={p} delay={i * 0.1} />
+              ))}
+            </div>
+            <div className="panel-footer">
+              <button onClick={() => setShowModal('register')} className="panel-cta offering-cta">
+                Share Your Skills <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* VS divider */}
+          <div className="split-divider">
+            <div className="divider-line"></div>
+            <div className="vs-badge"><Handshake size={20} /></div>
+            <div className="divider-line"></div>
+          </div>
+
+          {/* Seeking Panel */}
+          <div className="skill-panel seeking-panel">
+            <div className="panel-header">
+              <div className="panel-icon seeking-icon"><BookOpen size={24} /></div>
+              <div>
+                <h3>Seeking Skills</h3>
+                <p>Students looking to learn & grow</p>
+              </div>
+            </div>
+            <div className="panel-cards">
+              {seekExamples.map((p, i) => (
+                <SkillPreviewCard key={i} person={p} delay={i * 0.1} />
+              ))}
+            </div>
+            <div className="panel-footer">
+              <button onClick={() => setShowModal('register')} className="panel-cta seeking-cta">
+                Find Your Mentor <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES GRID ────────────────────── */}
       <section className="features-section">
         <div className="section-intro">
           <h2>Everything You Need to <span className="gradient-text">Collaborate</span></h2>
@@ -120,7 +228,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* ── HOW IT WORKS ─────────────────────── */}
       <section className="how-section">
         <div className="section-intro">
           <h2>How <span className="gradient-text">SkillBridge</span> Works</h2>
@@ -130,36 +238,41 @@ function Landing() {
           <div className="step-card">
             <div className="step-num">01</div>
             <h3>List Your Skills</h3>
-            <p>Share what you're great at and what you want to learn. Set your proficiency level to get matched accurately.</p>
+            <p>Share what you're great at and what you want to learn. Set your proficiency level.</p>
           </div>
           <div className="step-connector"><ArrowRight size={24} /></div>
           <div className="step-card">
             <div className="step-num">02</div>
             <h3>Get AI Matches</h3>
-            <p>Our cosine similarity engine analyzes skill vectors and suggests the best collaborators for you.</p>
+            <p>Our cosine similarity engine analyzes skill vectors and suggests the best collaborators.</p>
           </div>
           <div className="step-connector"><ArrowRight size={24} /></div>
           <div className="step-card">
             <div className="step-num">03</div>
             <h3>Collaborate & Grow</h3>
-            <p>Send requests, chat in real-time, work on projects together, and rate each other after completion.</p>
+            <p>Send requests, chat in real-time, work on projects, and rate each other after completion.</p>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
+      {/* ── CTA ──────────────────────────────── */}
       <section className="cta-section">
         <div className="cta-content">
           <Shield size={48} style={{ color: '#52ab98', marginBottom: '1rem' }} />
           <h2>Ready to Bridge the Skill Gap?</h2>
           <p>Join 500+ students already collaborating on campus. Your next great project starts here.</p>
-          <Link to="/register" className="btn-hero-primary" style={{ display: 'inline-flex' }}>
-            Join SkillBridge <ArrowRight size={20} />
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => setShowModal('register')} className="btn-hero-primary" style={{ display: 'inline-flex' }}>
+              Join SkillBridge <ArrowRight size={20} />
+            </button>
+            <button onClick={() => setShowModal('login')} className="btn-hero-secondary" style={{ display: 'inline-flex' }}>
+              Sign In
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ── FOOTER ───────────────────────────── */}
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-brand">
@@ -171,6 +284,48 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* ── AUTH MODAL (POPUP) ───────────────── */}
+      {showModal && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="modal-content" style={{ maxWidth: '400px', width: '100%' }}>
+            <div className="modal-header">
+              <h2>{showModal === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
+              <button className="close-btn" onClick={() => { setShowModal(null); setAuthError(''); }}><Award style={{ opacity: 0 }} /> ✕</button>
+            </div>
+            {authError && <div style={{ color: '#ef4444', marginBottom: '1.25rem', fontWeight: '800', textAlign: 'center', background: '#fef2f2', padding: '0.75rem', borderRadius: '12px' }}>{authError}</div>}
+            
+            <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {showModal === 'register' && (
+                <div className="form-field">
+                  <label>FULL NAME</label>
+                  <input type="text" placeholder="John Doe" value={authData.name} onChange={e => setAuthData({...authData, name: e.target.value})} className="input-premium" required />
+                </div>
+              )}
+              <div className="form-field">
+                <label>STUDENT EMAIL</label>
+                <input type="email" placeholder="name@student.edu" value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} className="input-premium" required />
+              </div>
+              <div className="form-field">
+                <label>PASSWORD</label>
+                <input type="password" placeholder="••••••••" value={authData.password} onChange={e => setAuthData({...authData, password: e.target.value})} className="input-premium" required />
+              </div>
+
+              <button type="submit" className="btn-hero-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }} disabled={loading}>
+                {loading ? 'Accessing...' : (showModal === 'login' ? 'Login' : 'Join SkillBridge')}
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>
+              {showModal === 'login' ? 'New to the community? ' : 'Already have an account? '}
+              <span style={{ color: '#2b6777', cursor: 'pointer', fontWeight: 800 }} onClick={() => setShowModal(showModal === 'login' ? 'register' : 'login')}>
+                {showModal === 'login' ? 'Create Account' : 'Sign In'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

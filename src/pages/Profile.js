@@ -3,7 +3,7 @@ import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { 
   ExternalLink, Github, Trash2, Plus, Star, Award, Mail, MapPin, 
-  Linkedin, Globe, Edit3, Camera, X, Check, Search, Calendar, ChevronRight
+  Linkedin, Globe, Edit3, X, Check, Zap, BookOpen, Pencil
 } from 'lucide-react';
 import '../profile.css';
 
@@ -19,7 +19,10 @@ function Profile() {
   const [activeTab, setActiveTab] = useState('portfolio');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
-  
+  const [showSkillModal, setShowSkillModal] = useState(false);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [skillForm, setSkillForm] = useState({ skill_name: '', category: '', proficiency_level: 'beginner', description: '', type: 'offer' });
+
   const { user, login } = useAuth();
   const [editUser, setEditUser] = useState({ ...user });
   const [newProject, setNewProject] = useState({ title: '', description: '', project_link: '', github_link: '' });
@@ -37,7 +40,11 @@ function Profile() {
         setEndorsements(endorseRes.data.data || []);
         setReviews(reviewRes.data.data || []);
         const allSkills = skillsRes.data.data || skillsRes.data || [];
-        setMySkills(allSkills.filter(s => s.user_id === user.id));
+        // MongoDB uses _id — filter by comparing string representations
+        setMySkills(allSkills.filter(s => {
+          const sid = s.user_id?._id || s.user_id;
+          return sid?.toString() === (user._id || user.id)?.toString();
+        }));
       } catch (err) { console.error(err); } 
       finally { setLoading(false); }
     };
@@ -71,6 +78,50 @@ function Profile() {
       await API.delete(`/portfolio/${id}`);
       setPortfolio(portfolio.filter(p => p.id !== id));
     } catch (err) { console.error(err); }
+  };
+
+  const openAddSkill = () => {
+    setEditingSkill(null);
+    setSkillForm({ skill_name: '', category: '', proficiency_level: 'beginner', description: '', type: 'offer' });
+    setShowSkillModal(true);
+  };
+
+  const openEditSkill = (skill) => {
+    setEditingSkill(skill);
+    setSkillForm({
+      skill_name: skill.skill_name,
+      category: skill.category || '',
+      proficiency_level: skill.proficiency_level || 'beginner',
+      description: skill.description || '',
+      type: skill.type || 'offer',
+    });
+    setShowSkillModal(true);
+  };
+
+  const handleSkillSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingSkill) {
+        const res = await API.put(`/skills/${editingSkill._id || editingSkill.id}`, skillForm);
+        setMySkills(mySkills.map(s => (s._id || s.id) === (editingSkill._id || editingSkill.id) ? res.data.data : s));
+      } else {
+        const res = await API.post('/skills', skillForm);
+        setMySkills([...mySkills, res.data.data]);
+      }
+      setShowSkillModal(false);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save skill');
+    }
+  };
+
+  const handleDeleteSkill = async (skill) => {
+    if (!window.confirm(`Remove "${skill.skill_name}" from your profile?`)) return;
+    try {
+      await API.delete(`/skills/${skill._id || skill.id}`);
+      setMySkills(mySkills.filter(s => (s._id || s.id) !== (skill._id || skill.id)));
+    } catch (err) {
+      alert('Failed to delete skill');
+    }
   };
 
   if (loading) return (
@@ -152,7 +203,9 @@ function Profile() {
         <main className="content-glass">
             <nav className="tab-nav-v2">
                <button className={activeTab === 'portfolio' ? 'active' : ''} onClick={() => setActiveTab('portfolio')}>Contributions</button>
+               <button className={activeTab === 'skills' ? 'active' : ''} onClick={() => setActiveTab('skills')}>My Skills</button>
                <button className={activeTab === 'validations' ? 'active' : ''} onClick={() => setActiveTab('validations')}>Peer Validations</button>
+               <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>Reputation</button>
             </nav>
 
             <div className="tab-pane">
@@ -162,28 +215,80 @@ function Profile() {
                       <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>Featured Projects</h3>
                       <button className="add-btn" onClick={() => setShowProjectModal(true)} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> New Entry</button>
                    </div>
-                   <div className="portfolio-v2">
-                     {portfolio.length === 0 ? <div className="empty-box" style={{ width: '100%', gridColumn: 'span 2' }}>Add your first project to the spotlight.</div> : 
-                       portfolio.map(p => (
-                         <div className="project-card-v2" key={p.id} style={{ position: 'relative' }}>
-                            <div className="project-thumb" style={{ backgroundImage: `url(${MOCK_PROJECT_THUMB})` }}></div>
-                            <div className="project-body-v2">
-                               <h4>{p.title}</h4>
-                               <p style={{ color: '#64748b', fontSize: '0.95rem', height: '3.6rem', overflow: 'hidden' }}>{p.description}</p>
-                               <div className="project-tags">
-                                  <span className="project-tag">REACT</span>
-                                  <span className="project-tag">NODE.JS</span>
-                                  <span className="project-tag">SQL</span>
-                               </div>
-                               <div style={{ display: 'flex', gap: '1.25rem', marginTop: '1.5rem', borderTop: '2px solid #f1f5f9', paddingTop: '1rem' }}>
-                                  {p.project_link && <a href={p.project_link} target="_blank" rel="noreferrer" style={{ color: '#2b6777', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '950', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Globe size={14} /> LIVE</a>}
-                                  {p.github_link && <a href={p.github_link} target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '950', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Github size={14} /> VIEW CODE</a>}
-                               </div>
-                            </div>
-                            <button onClick={() => handleDeleteProject(p.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(255,255,255,0.9)', color: '#ef4444', border: 'none', padding: '0.5rem', borderRadius: '8px', cursor: 'pointer', zIndex: 5 }}><Trash2 size={16} /></button>
-                         </div>
-                       ))
-                     }
+                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                       {portfolio.length === 0 ? <div className="empty-box" style={{ width: '100%', gridColumn: '1 / -1' }}>Add your first project to the spotlight.</div> : 
+                         portfolio.map(p => (
+                           <div className="project-card-v2 premium-hover" key={p.id} style={{ position: 'relative', background: '#fff', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f5f9', transition: 'all 0.3s' }}>
+                              <div className="project-thumb" style={{ backgroundImage: `url(${p.image_url || MOCK_PROJECT_THUMB})`, height: '160px', backgroundSize: 'cover', backgroundPosition: 'center', borderBottom: '1px solid #f1f5f9' }}></div>
+                              <div className="project-body-v2" style={{ padding: '1.5rem' }}>
+                                 <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem' }}>{p.title}</h4>
+                                 <p style={{ color: '#64748b', fontSize: '0.85rem', height: '3.8rem', overflow: 'hidden', lineHeight: '1.4' }}>{p.description}</p>
+                                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.25rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+                                    {p.project_link && <a href={p.project_link} target="_blank" rel="noreferrer" style={{ color: '#52ab98', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Globe size={14} /> LIVE</a>}
+                                    {p.github_link && <a href={p.github_link} target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Github size={14} /> CODE</a>}
+                                 </div>
+                              </div>
+                              <button onClick={() => handleDeleteProject(p.id)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'rgba(255,255,255,0.95)', color: '#ef4444', border: 'none', padding: '0.4rem', borderRadius: '8px', cursor: 'pointer', zIndex: 5, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}><Trash2 size={16} /></button>
+                           </div>
+                         ))
+                       }
+                     </div>
+                 </div>
+               )}
+
+               {activeTab === 'skills' && (
+                 <div>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                     <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>My Skills</h3>
+                     <button className="add-btn" onClick={openAddSkill} style={{ padding: '0.5rem 1.25rem' }}><Plus size={20} /> Add Skill</button>
+                   </div>
+
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                     {/* Offering Column */}
+                     <div>
+                       <div className="skills-col-header offering">
+                         <Zap size={16} /> Offering
+                       </div>
+                       {mySkills.filter(s => s.type === 'offer').length === 0
+                         ? <div className="empty-box" style={{ margin: '0.5rem 0' }}>No skills offered yet.</div>
+                         : mySkills.filter(s => s.type === 'offer').map(skill => (
+                           <div key={skill._id || skill.id} className="my-skill-row">
+                             <div className="my-skill-info">
+                               <span className="my-skill-name">{skill.skill_name}</span>
+                               <span className={`proficiency-badge ${skill.proficiency_level}`}>{skill.proficiency_level}</span>
+                               {skill.category && <span className="skill-category">{skill.category}</span>}
+                             </div>
+                             <div className="my-skill-actions">
+                               <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>
+                               <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>
+                             </div>
+                           </div>
+                         ))
+                       }
+                     </div>
+
+                     {/* Seeking Column */}
+                     <div>
+                       <div className="skills-col-header seeking">
+                         <BookOpen size={16} /> Seeking
+                       </div>
+                       {mySkills.filter(s => s.type === 'request').length === 0
+                         ? <div className="empty-box" style={{ margin: '0.5rem 0' }}>No skills requested yet.</div>
+                         : mySkills.filter(s => s.type === 'request').map(skill => (
+                           <div key={skill._id || skill.id} className="my-skill-row">
+                             <div className="my-skill-info">
+                               <span className="my-skill-name">{skill.skill_name}</span>
+                               <span className={`proficiency-badge ${skill.proficiency_level}`}>{skill.proficiency_level}</span>
+                               {skill.category && <span className="skill-category">{skill.category}</span>}
+                             </div>
+                             <div className="my-skill-actions">
+                               <button onClick={() => openEditSkill(skill)} title="Edit" className="skill-action-btn edit"><Pencil size={14} /></button>
+                               <button onClick={() => handleDeleteSkill(skill)} title="Delete" className="skill-action-btn delete"><Trash2 size={14} /></button>
+                             </div>
+                           </div>
+                         ))
+                       }
+                     </div>
                    </div>
                  </div>
                )}
@@ -192,18 +297,60 @@ function Profile() {
                  <div className="validations-v2">
                     <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem', marginBottom: '2rem' }}>Peer Endorsements</h3>
                     {endorsements.length === 0 ? <div className="empty-box">Peer validations help build trust. Collaborate to get endorsed!</div> : 
-                      endorsements.map(e => (
-                        <div key={e.id} style={{ background: '#fcfdfe', padding: '2rem', borderRadius: '25px', border: '2px solid #f1f5f9', marginBottom: '1.5rem', display: 'flex', gap: '1.5rem' }}>
-                           <div style={{ width: '44px', height: '44px', background: 'var(--primary)', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 950 }}>{e.endorser.name[0]}</div>
-                           <div style={{ flex: 1 }}>
-                              <p style={{ fontStyle: 'italic', color: '#1e293b', fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>"{e.comment}"</p>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                 <span style={{ fontSize: '0.8rem', fontWeight: '900', color: '#52ab98' }}>— {e.endorser.name}</span>
-                                 <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Certified Skill Check</span>
-                              </div>
-                           </div>
-                        </div>
-                      ))
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        {endorsements.map(e => (
+                          <div key={e.id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '20px', border: '1px solid #f1f5f9', display: 'flex', gap: '1.25rem', alignItems: 'flex-start', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                             <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', color: '#059669', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0, border: '1px solid #a7f3d0' }}>
+                               {e.endorser?.name?.[0] || 'U'}
+                             </div>
+                             <div style={{ flex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                   <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#1e293b' }}>{e.endorser?.name || 'Unknown User'}</span>
+                                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#52ab98', background: '#ecfdf5', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.65rem', fontWeight: 900 }}>
+                                      <Award size={12} /> ENDORSED SKILL
+                                   </div>
+                                </div>
+                                <p style={{ fontStyle: 'italic', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>"{e.comment}"</p>
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    }
+                 </div>
+               )}
+
+               {activeTab === 'reviews' && (
+                 <div className="reviews-v2">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                      <h3 style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.4rem' }}>Reputation & Reviews</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fff8f1', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid #ffedd5' }}>
+                         <Star size={20} color="#f59e0b" fill="#f59e0b" />
+                         <span style={{ fontWeight: 900, color: '#9a3412', fontSize: '1.1rem' }}>
+                           {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 'New'}
+                         </span>
+                      </div>
+                    </div>
+                    {reviews.length === 0 ? <div className="empty-box">No reviews yet. Complete collaborations to earn ratings!</div> : 
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                        {reviews.map(r => (
+                          <div key={r.id || r._id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                               <div style={{ width: '36px', height: '36px', background: '#f8fafc', color: '#1e293b', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                                 {r.reviewer?.name?.[0] || 'U'}
+                               </div>
+                               <div>
+                                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>{r.reviewer?.name || 'Anonymous User'}</div>
+                                 <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', marginTop: '2px' }}>
+                                   {[...Array(5)].map((_, i) => (
+                                     <Star key={i} size={12} fill={i < r.rating ? '#f59e0b' : 'none'} color={i < r.rating ? '#f59e0b' : '#cbd5e1'} />
+                                   ))}
+                                 </div>
+                               </div>
+                             </div>
+                             <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: '1.5' }}>"{r.comment}"</p>
+                          </div>
+                        ))}
+                      </div>
                     }
                  </div>
                )}
@@ -274,6 +421,57 @@ function Profile() {
                  <button type="submit" className="btn-publish" style={{ marginTop: '1rem' }}><Plus size={22} /> Commit to Portfolio</button>
               </form>
            </div>
+        </div>
+      )}
+
+      {/* Skill Add/Edit Modal */}
+      {showSkillModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>{editingSkill ? 'Edit Skill' : 'Add New Skill'}</h2>
+              <button className="close-btn" onClick={() => setShowSkillModal(false)}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSkillSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="form-field">
+                <label>Skill Name *</label>
+                <input type="text" value={skillForm.skill_name} onChange={e => setSkillForm({...skillForm, skill_name: e.target.value})} className="input-premium" placeholder="e.g. React, Python, Figma" required />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-field">
+                  <label>Category</label>
+                  <input type="text" value={skillForm.category} onChange={e => setSkillForm({...skillForm, category: e.target.value})} className="input-premium" placeholder="e.g. Frontend, ML" />
+                </div>
+                <div className="form-field">
+                  <label>Proficiency</label>
+                  <select value={skillForm.proficiency_level} onChange={e => setSkillForm({...skillForm, proficiency_level: e.target.value})} className="input-premium">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                    <option value="expert">Expert</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-field">
+                <label>Type *</label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  {['offer', 'request'].map(t => (
+                    <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, color: skillForm.type === t ? '#52ab98' : '#64748b' }}>
+                      <input type="radio" name="type" value={t} checked={skillForm.type === t} onChange={e => setSkillForm({...skillForm, type: e.target.value})} />
+                      {t === 'offer' ? '⚡ Offering' : '🎓 Seeking'}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="form-field">
+                <label>Description</label>
+                <textarea value={skillForm.description} onChange={e => setSkillForm({...skillForm, description: e.target.value})} className="textarea-premium" rows={3} placeholder="Briefly describe your experience with this skill..." />
+              </div>
+              <button type="submit" className="btn-publish" style={{ marginTop: '0.5rem' }}>
+                <Check size={20} /> {editingSkill ? 'Save Changes' : 'Add Skill'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
