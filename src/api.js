@@ -19,4 +19,21 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle global errors (like 401 Unauthorized)
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Only redirect if NOT already on a public/auth page
+    const publicPages = ['/login', '/register', '/landing', '/'];
+    const isPublicPage = publicPages.includes(window.location.pathname);
+    
+    if (error.response && error.response.status === 401 && !isPublicPage) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default API;

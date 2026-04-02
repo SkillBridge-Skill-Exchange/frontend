@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, CheckCircle } from 'lucide-react';
+import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, CheckCircle, Briefcase, Search } from 'lucide-react';
 import API from '../api';
 
 const badgeConfig = {
@@ -79,8 +79,8 @@ function SkillCard({ skill, currentUser, onDelete }) {
     <>
       <div className="skill-card premium">
         <div className="card-top">
-          <span className={`type-ribbon ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`}>
-            {skill.type === 'offer' ? '🎯 OFFERING' : '🔍 SEEKING'}
+          <span className={`type-ribbon ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            {skill.type === 'offer' ? <><Briefcase size={14} /> OFFERING</> : <><Search size={14} /> SEEKING</>}
           </span>
           <span className="category-pill">{(skill.category || 'General').substring(0, 15).toUpperCase()}</span>
         </div>

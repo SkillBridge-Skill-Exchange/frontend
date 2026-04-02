@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, MessageSquare, PlusCircle, Bell, LogOut, 
-  Search, Trophy, Handshake, Home 
+  Search, Trophy, Handshake, Home, Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import API from '../api';
@@ -62,6 +62,10 @@ function Navbar() {
               <Link to="/skills" className={`nav-link-with-icon ${isActive('/skills')}`}>
                 <Search size={18} />
                 <span>Explore</span>
+              </Link>
+              <Link to="/collaborate" className={`nav-link-with-icon ${isActive('/collaborate')}`}>
+                <Users size={18} />
+                <span>Collaborate</span>
               </Link>
               <Link to="/requests" className={`nav-link-with-icon ${isActive('/requests')}`}>
                 <Handshake size={18} />
