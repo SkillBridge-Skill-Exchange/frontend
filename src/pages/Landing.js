@@ -25,17 +25,17 @@ const stats = [
 ];
 
 const offerExamples = [
-  { name: 'Alice J.', skill: 'React & Next.js', badge: 'Expert', color: '#2b6777' }, // primary
-  { name: 'Rahul S.', skill: 'UI/UX Design', badge: 'Advanced', color: '#52ab98' }, // accent
-  { name: 'Meera P.', skill: 'Python ML', badge: 'Expert', color: '#1e4854' },     // dark primary
-  { name: 'Dev K.', skill: 'Node.js APIs', badge: 'Intermediate', color: '#3f8576' }, // dark accent
+  { name: 'Alice J.', skill: 'React & Next.js', badge: 'Expert', color: '#1b3a4b' },
+  { name: 'Rahul S.', skill: 'UI/UX Design', badge: 'Advanced', color: '#3d8b7a' },
+  { name: 'Meera P.', skill: 'Python ML', badge: 'Expert', color: '#0f2b3c' },
+  { name: 'Dev K.', skill: 'Node.js APIs', badge: 'Intermediate', color: '#2b6777' },
 ];
 
 const seekExamples = [
-  { name: 'Bob M.', skill: 'App Development', badge: 'Beginner', color: '#2b6777' },
-  { name: 'Sara T.', skill: 'Data Science', badge: 'Intermediate', color: '#52ab98' },
-  { name: 'Arjun V.', skill: 'Cloud & DevOps', badge: 'Beginner', color: '#1e4854' },
-  { name: 'Priya L.', skill: 'Blockchain', badge: 'Intermediate', color: '#3f8576' },
+  { name: 'Bob M.', skill: 'App Development', badge: 'Beginner', color: '#1b3a4b' },
+  { name: 'Sara T.', skill: 'Data Science', badge: 'Intermediate', color: '#3d8b7a' },
+  { name: 'Arjun V.', skill: 'Cloud & DevOps', badge: 'Beginner', color: '#0f2b3c' },
+  { name: 'Priya L.', skill: 'Blockchain', badge: 'Intermediate', color: '#2b6777' },
 ];
 
 function SkillPreviewCard({ person, delay }) {
@@ -163,18 +163,18 @@ function Landing({ initialModal = null }) {
         </div>
         <div className="hero-visual">
           <div className="visual-card card-1">
-            <div className="mini-avatar" style={{ background: '#52ab98' }}>A</div>
-            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>React Expert</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>96% Match</div></div>
+            <div className="mini-avatar" style={{ background: '#3d8b7a' }}>A</div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'white' }}>React Expert</div><div style={{ fontSize: '0.65rem', color: '#8aaab8' }}>96% Match</div></div>
             <div className="match-ring" style={{ '--progress': '96%' }}><span>96%</span></div>
           </div>
           <div className="visual-card card-2">
-            <div className="mini-avatar" style={{ background: '#2b6777' }}>S</div>
-            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Python ML</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>89% Match</div></div>
+            <div className="mini-avatar" style={{ background: '#1b3a4b' }}>S</div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'white' }}>Python ML</div><div style={{ fontSize: '0.65rem', color: '#8aaab8' }}>89% Match</div></div>
             <div className="match-ring" style={{ '--progress': '89%' }}><span>89%</span></div>
           </div>
           <div className="visual-card card-3">
-            <div className="mini-avatar" style={{ background: '#e67e22' }}>M</div>
-            <div><div style={{ fontWeight: 800, fontSize: '0.9rem' }}>UI/UX Design</div><div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>82% Match</div></div>
+            <div className="mini-avatar" style={{ background: '#87ceeb' }}>M</div>
+            <div><div style={{ fontWeight: 800, fontSize: '0.82rem', color: 'white' }}>UI/UX Design</div><div style={{ fontSize: '0.65rem', color: '#8aaab8' }}>82% Match</div></div>
             <div className="match-ring" style={{ '--progress': '82%' }}><span>82%</span></div>
           </div>
         </div>
@@ -302,7 +302,7 @@ function Landing({ initialModal = null }) {
       {/* ── CTA ──────────────────────────────── */}
       <section className="cta-section">
         <div className="cta-content">
-          <Shield size={48} style={{ color: '#52ab98', marginBottom: '1rem' }} />
+          <Shield size={40} style={{ color: '#3d8b7a', marginBottom: '0.85rem' }} />
           <h2>Ready to Bridge the Skill Gap?</h2>
           <p>Join 500+ students already collaborating on campus. Your next great project starts here.</p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -400,7 +400,7 @@ function Landing({ initialModal = null }) {
 
             <div style={{ textAlign: 'center', marginTop: '1.5rem', color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>
               {showModal === 'login' ? 'New to the community? ' : 'Already have an account? '}
-              <span style={{ color: '#2b6777', cursor: 'pointer', fontWeight: 800 }} onClick={() => setShowModal(showModal === 'login' ? 'register' : 'login')}>
+              <span style={{ color: '#1b3a4b', cursor: 'pointer', fontWeight: 800 }} onClick={() => setShowModal(showModal === 'login' ? 'register' : 'login')}>
                 {showModal === 'login' ? 'Create Account' : 'Sign In'}
               </span>
             </div>

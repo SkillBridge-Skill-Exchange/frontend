@@ -111,7 +111,7 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
 
         {/* Body: Focus Node */}
         <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 950, color: '#2b6777', textTransform: 'lowercase', margin: 0, letterSpacing: '-0.8px' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 950, color: '#1b3a4b', textTransform: 'lowercase', margin: 0, letterSpacing: '-0.6px' }}>
             {skill.skill_name}
           </h2>
           
@@ -130,7 +130,7 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
             <Star size={14} color="#3b82f6" /> {skill.proficiency_level ? skill.proficiency_level.charAt(0).toUpperCase() + skill.proficiency_level.slice(1) : 'Beginner'}
           </div>
 
-          <p className="description-text" style={{ fontSize: '0.95rem', color: '#64748b', fontWeight: 600, lineHeight: 1.5 }}>
+          <p className="description-text" style={{ fontSize: '0.82rem', color: '#5a7d8a', fontWeight: 600, lineHeight: 1.45 }}>
             {skill.description || "Experimental technical collaboration focused on knowledge exchange."}
           </p>
         </div>
@@ -152,11 +152,11 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
                 transition: 'background 0.2s'
              }}
           >
-            <div className="avatar-xs" style={{ background: '#2b6777', width: '38px', height: '38px', minWidth: '38px', borderRadius: '10px' }}>
+            <div className="avatar-xs" style={{ background: '#1b3a4b', width: '34px', height: '34px', minWidth: '34px', borderRadius: '9px' }}>
               {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <div className="user-name" style={{ fontSize: '1.05rem', fontWeight: 950, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div className="user-name" style={{ fontSize: '0.88rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {(skill.user?.name || skill.owner?.name || 'Talented Peer').toUpperCase()}
               </div>
               <div className="user-subline" style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 800 }}>
@@ -191,7 +191,7 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
                       handleRequest();
                    }
                 }}
-                style={{ background: '#2b6777', color: 'white', borderRadius: '12px', width: '46px' }}
+                style={{ background: '#1b3a4b', color: 'white', borderRadius: '10px', width: '40px' }}
                 title={requested ? "Message Peer" : "Request Sync"}
              >
                 {requested ? <Send size={20} /> : <Handshake size={20} />}

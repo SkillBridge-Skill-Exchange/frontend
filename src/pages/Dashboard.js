@@ -10,7 +10,7 @@ import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { 
-  Users, MessageCircle, ArrowRight, Brain, 
+  Users, MessageCircle, ArrowRight, Brain, ChevronRight,
   CheckCircle, Clock, Send, Zap, Activity, Medal, Sparkle, Handshake,
   Calendar, MapPin, Layout, Search, Sparkles, Filter, Globe,
   Rocket, TrendingUp, X
@@ -70,9 +70,9 @@ function Dashboard() {
 
   const getMatchColor = (pct) => {
     if (pct >= 85) return '#10b981';
-    if (pct >= 70) return '#52ab98';
+    if (pct >= 70) return '#3d8b7a';
     if (pct >= 50) return '#f59e0b';
-    return '#64748b';
+    return '#5a7d8a';
   };
 
   if (loading) return (
@@ -89,7 +89,7 @@ function Dashboard() {
          {/* Welcome Bento */}
          <div className="bento-card welcome-card">
             <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.7rem', fontWeight: 950, color: '#0d9488' }}>
+               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.65rem', fontWeight: 950, color: '#3d8b7a' }}>
                   <Globe size={14} /> {user?.department?.toUpperCase() || 'GENERAL'} DIVISION
                </div>
                {stats?.debugVersion && (
@@ -113,7 +113,7 @@ function Dashboard() {
          {/* Stats Bento */}
          <div className="bento-card insights-card">
             <div className="insight-item" onClick={() => { setSelectedStat('skills'); setShowDetailModal(true); }} style={{ cursor: 'pointer' }}>
-               <div className="insight-icon-v3" style={{ background: '#f0fdf9', color: '#0d9488' }}><Zap size={20} /></div>
+               <div className="insight-icon-v3" style={{ background: '#e8f4f0', color: '#3d8b7a' }}><Zap size={18} /></div>
                <div className="insight-data">
                   <div className="value">{stats?.myStats?.mySkillsCount || 0}</div>
                   <div className="label">Your Offers</div>
@@ -141,7 +141,7 @@ function Dashboard() {
          {/* Real Agenda */}
          <div className="bento-card">
             <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
-               SYNC AGENDA <Calendar size={18} color="#2b6777" />
+               SYNC AGENDA <Calendar size={16} color="#1b3a4b" />
             </div>
             <div className="agenda-list">
                {agenda.length === 0 ? (
@@ -155,8 +155,8 @@ function Dashboard() {
                           <Clock size={16} />
                        </div>
                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 950, color: '#1e293b' }}>{act.sender_name || act.skill_name}</div>
-                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 950, color: '#1b3a4b' }}>{act.sender_name || act.skill_name}</div>
+                          <div style={{ fontSize: '0.6rem', color: '#5a7d8a', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
                        </div>
                        <Link to="/requests" style={{ color: 'var(--primary)', opacity: 0.8 }}><ArrowRight size={14} /></Link>
                     </div>
@@ -175,12 +175,12 @@ function Dashboard() {
                  <div key={i} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '24px', position: 'relative', border: '1px solid #f1f5f9' }}>
                     <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', fontSize: '0.8rem', fontWeight: 950, color: getMatchColor(m.match_percentage) }}>{m.match_percentage}%</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                       <div className="elite-avatar" style={{ width: '40px', height: '40px', fontSize: '1rem', background: `linear-gradient(135deg, ${getMatchColor(m.match_percentage)}, #1e293b)` }}>
+                       <div className="elite-avatar" style={{ width: '36px', height: '36px', fontSize: '0.9rem', background: `linear-gradient(135deg, ${getMatchColor(m.match_percentage)}, #1b3a4b)` }}>
                           {m.user.name?.[0]}
                        </div>
                        <div style={{ overflow: 'hidden' }}>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 950, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.user.name}</div>
-                          <div style={{ fontSize: '0.6rem', fontWeight: 800, color: '#94a3b8' }}>{m.user.department || 'CAMPUS'}</div>
+                          <div style={{ fontSize: '0.78rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.user.name}</div>
+                          <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#5a7d8a' }}>{m.user.department || 'CAMPUS'}</div>
                        </div>
                     </div>
                     <div className="skill-pills-v2">
@@ -204,7 +204,7 @@ function Dashboard() {
       <div className="bottom-bento">
          {/* Live Demand Pulse */}
          <div className="bottom-card market-card" style={{ padding: '1.5rem' }}>
-            <div className="section-title-elite" style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>LIVE DEMAND PULSE <Activity size={18} color="#52ab98" /></div>
+            <div className="section-title-elite" style={{ marginBottom: '1.25rem', fontSize: '0.95rem' }}>LIVE DEMAND PULSE <Activity size={16} color="#3d8b7a" /></div>
             <div className="chart-view-v3">
                {(!stats || !stats.demandChart || stats.demandChart.length === 0) ? (
                   <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4, fontSize: '0.8rem' }}>No technical activity detected.</div>
@@ -212,7 +212,7 @@ function Dashboard() {
                   stats.demandChart.map((item, index) => {
                      const maxCount = stats.demandChart[0]?.count || 1;
                      const pct = (item.count / maxCount) * 100;
-                     const colors = ['#2b6777', '#52ab98', '#3b82f6', '#db2777'];
+                     const colors = ['#1b3a4b', '#3d8b7a', '#87ceeb', '#0f2b3c'];
                      return (
                        <div className="elite-chart-row" key={index} style={{ marginBottom: '1rem' }}>
                           <div className="chart-header-v3">
@@ -232,7 +232,7 @@ function Dashboard() {
          {/* Elite Contributors */}
          <div className="bottom-card leaderboard-card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-               <div className="section-title-elite" style={{ marginBottom: 0, fontSize: '1.1rem' }}>TOP EXPERTS <Medal size={18} color="#f59e0b" /></div>
+               <div className="section-title-elite" style={{ marginBottom: 0, fontSize: '0.95rem' }}>TOP EXPERTS <Medal size={16} color="#f59e0b" /></div>
                <Link to="/leaderboard" className="see-all-link" style={{ fontSize: '0.7rem' }}>ALL RANKINGS</Link>
             </div>
             <div className="elite-ranking-list">
@@ -241,7 +241,7 @@ function Dashboard() {
                ) : (
                   stats.leaderboard.slice(0, 3).map((student, index) => (
                     <div className="elite-ranker" key={student.id} style={{ padding: '0.65rem 0' }}>
-                       <div className="elite-avatar" style={{ width: '34px', height: '34px', fontSize: '0.85rem', background: '#f8fafc', color: '#1e293b' }}>{student.name?.[0]}</div>
+                       <div className="elite-avatar" style={{ width: '32px', height: '32px', fontSize: '0.78rem', background: '#f8f7f4', color: '#1b3a4b' }}>{student.name?.[0]}</div>
                        <div className="user-names">
                           <h4 style={{ fontSize: '0.85rem' }}>{student.name}</h4>
                           <p style={{ fontSize: '0.6rem' }}>{student.skillsCount} TECHNICAL OFFERS</p>

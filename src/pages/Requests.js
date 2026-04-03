@@ -23,6 +23,19 @@ function Requests() {
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const { user } = useAuth();
 
+  const statusConfig = {
+    pending: { label: 'PENDING', bg: '#fef3c7', color: '#d97706', icon: <Clock size={14} /> },
+    accepted: { label: 'ACCEPTED', bg: '#d1fae5', color: '#059669', icon: <CheckCircle size={14} /> },
+    connecting: { label: 'CONNECTING', bg: '#dbeafe', color: '#2563eb', icon: <MessageCircle size={14} /> },
+    completed: { label: 'COMPLETED', bg: '#f0fdf4', color: '#10b981', icon: <CheckCircle size={14} /> },
+    declined: { label: 'DECLINED', bg: '#fee2e2', color: '#ef4444', icon: <XCircle size={14} /> },
+  };
+
+  const initializeChat = (userId) => {
+    if (userId) navigate(`/messaging?user=${userId}`);
+    else navigate('/messaging');
+  };
+
   useEffect(() => { fetchRequests(); }, []);
 
   const fetchRequests = async () => {
@@ -106,10 +119,10 @@ function Requests() {
   return (
     <div className="page requests-page">
       <div className="requests-header">
-        <h1 style={{ fontSize: '2.8rem', fontWeight: 950, color: '#2b6777', letterSpacing: '-1.5px' }}>
-          <Handshake size={44} style={{ marginRight: '0.5rem' }} /> Collaboration Hub
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 950, color: '#1b3a4b', letterSpacing: '-1.5px' }}>
+          <Handshake size={38} style={{ marginRight: '0.5rem' }} /> Collaboration Hub
         </h1>
-        <p style={{ fontWeight: 600, color: '#64748b' }}>Manage your campus learning partnerships.</p>
+        <p style={{ fontWeight: 600, color: '#5a7d8a' }}>Manage your campus learning partnerships.</p>
       </div>
 
       <div className="req-tabs" style={{ marginBottom: '2.5rem' }}>
