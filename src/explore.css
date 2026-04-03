@@ -355,6 +355,8 @@
 /* Portfolio Card Passport-style */
 .portfolio-card {
   border-top: 6px solid var(--primary);
+  aspect-ratio: auto !important;
+  min-height: 380px;
 }
 
 .portfolio-card .avatar-lg {

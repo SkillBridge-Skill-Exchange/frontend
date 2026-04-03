@@ -65,7 +65,7 @@ function PortfolioCard({ student }) {
         </div>
       </div>
 
-      <div className="card-footer" style={{ borderTop: '2px solid #f8fafc', background: 'rgba(248, 250, 252, 0.5)', padding: '2rem', margin: '2rem -1.75rem -1.75rem', borderRadius: '0 0 30px 30px' }}>
+      <div className="card-footer" style={{ borderTop: '2px solid #f8fafc', background: 'rgba(248, 250, 252, 0.5)', padding: '1.5rem', margin: 'auto -1.25rem -1.25rem', borderRadius: '0 0 24px 24px' }}>
         <div className="card-actions" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '0.85rem' }}>
             {student.github_url && (
@@ -82,9 +82,9 @@ function PortfolioCard({ student }) {
           <Link 
             to={`/profile/${student._id}`} 
             className="icon-btn primary" 
-            style={{ width: 'auto', padding: '0.85rem 1.75rem', height: 'auto', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 950, gap: '0.75rem' }}
+            style={{ width: 'auto', padding: '0.75rem 1.25rem', height: 'auto', borderRadius: '14px', fontSize: '0.85rem', fontWeight: 950, gap: '0.5rem', marginLeft: 'auto' }}
           >
-            VIEW PROFILE <ExternalLink size={18} />
+            View Full Portfolio <ExternalLink size={16} />
           </Link>
         </div>
       </div>
