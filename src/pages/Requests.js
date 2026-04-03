@@ -8,15 +8,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Handshake, CheckCircle, XCircle, Clock, Send, Star, 
+import {
+  Handshake, CheckCircle, XCircle, Clock, Send, Star,
   User, MessageCircle, ChevronDown, Trash2, X, MessageSquare
 } from 'lucide-react';
 import '../requests.css';
 
 function Requests() {
-  const navigate = useNavigate();
+
   const [requests, setRequests] = useState({ sent: [], received: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('received');
@@ -198,7 +197,7 @@ function Requests() {
                   </div>
                   {r.status === 'accepted' && (
                     <button className="btn-icon-action chat" onClick={() => initializeChat(r.skill?.owner?._id || r.skill?.owner?.id)} title="Initialize Chat">
-                        <MessageCircle size={20} />
+                      <MessageCircle size={20} />
                     </button>
                   )}
                 </div>
