@@ -49,8 +49,9 @@ function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-content">
-        <Link to={user ? '/dashboard' : '/landing'} className="brand" style={{ textDecoration: 'none' }}>
-          <h2>SkillBridge</h2>
+        <Link to={user ? '/dashboard' : '/landing'} className="brand" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <img src="/SKILLBRIDGELOGO-Photoroom.png" alt="SkillBridge Logo" style={{ height: '44px', objectFit: 'contain' }} />
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 950, letterSpacing: '-1px', color: '#2b6777', margin: 0 }}>SkillBridge</h2>
         </Link>
         <nav>
           {user ? (

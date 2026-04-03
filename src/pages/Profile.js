@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
+import SkillCard from '../components/SkillCard';
 import { 
   ExternalLink, Github, Trash2, Plus, Star, Award, Mail, MapPin, 
-  Linkedin, Globe, Edit3, X, Check, Zap, BookOpen, Pencil, Building, GraduationCap
+  Linkedin, Globe, Edit3, X, Check, Zap, BookOpen, Pencil, Building, GraduationCap, Handshake, Search, Brain
 } from 'lucide-react';
 import '../profile.css';
 
@@ -292,53 +293,23 @@ function Profile() {
                       {!isVisitor && <button className="add-btn" onClick={openAddSkill} style={{ padding: '0.7rem 1.4rem', borderRadius: '14px', fontSize: '0.85rem' }}><Plus size={20} /> ADD SKILL</button>}
                     </div>
 
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                     <div>
-                       <div className="skills-col-header offering" style={{ padding: '0.75rem 1.25rem', borderRadius: '14px' }}>
-                         <Zap size={18} /> OFFERING EXPERTISE
-                       </div>
-                       {mySkills.filter(s => s.type === 'offer').length === 0
-                         ? <div className="empty-box" style={{ margin: '1rem 0', padding: '3rem' }}>No skills offered yet.</div>
-                         : mySkills.filter(s => s.type === 'offer').map(skill => (
-                           <div key={skill._id || skill.id} className="my-skill-row" style={{ padding: '1.25rem', borderRadius: '18px' }}>
-                             <div className="my-skill-info">
-                               <span className="my-skill-name" style={{ fontSize: '1.1rem' }}>{skill.skill_name}</span>
-                               <span className={`proficiency-badge ${skill.proficiency_level}`} style={{ margin: '0 0.5rem' }}>{skill.proficiency_level}</span>
-                               {skill.category && <span className="category-tag">{skill.category.substring(0, 10)}</span>}
-                             </div>
-                             <div className="my-skill-actions">
-                               {!isVisitor && <button onClick={() => openEditSkill(skill)} className="icon-btn secondary" style={{ width: '32px', height: '32px' }}><Pencil size={14} /></button>}
-                               {!isVisitor && <button onClick={() => handleDeleteSkill(skill)} className="icon-btn danger" style={{ width: '32px', height: '32px' }}><Trash2 size={14} /></button>}
-                             </div>
-                           </div>
-                         ))
-                       }
-                     </div>
-
-                     <div>
-                       <div className="skills-col-header seeking" style={{ padding: '0.75rem 1.25rem', borderRadius: '14px' }}>
-                         <BookOpen size={18} /> SEEKING GUIDANCE
-                       </div>
-                       {mySkills.filter(s => s.type === 'request').length === 0
-                         ? <div className="empty-box" style={{ margin: '1rem 0', padding: '3rem' }}>No skills requested yet.</div>
-                         : mySkills.filter(s => s.type === 'request').map(skill => (
-                           <div key={skill._id || skill.id} className="my-skill-row" style={{ padding: '1.25rem', borderRadius: '18px' }}>
-                             <div className="my-skill-info">
-                               <span className="my-skill-name" style={{ fontSize: '1.1rem' }}>{skill.skill_name}</span>
-                               <span className={`proficiency-badge ${skill.proficiency_level}`} style={{ margin: '0 0.5rem' }}>{skill.proficiency_level}</span>
-                               {skill.category && <span className="category-tag">{skill.category.substring(0, 10)}</span>}
-                             </div>
-                             <div className="my-skill-actions">
-                               {!isVisitor && <button onClick={() => openEditSkill(skill)} className="icon-btn secondary" style={{ width: '32px', height: '32px' }}><Pencil size={14} /></button>}
-                               {!isVisitor && <button onClick={() => handleDeleteSkill(skill)} className="icon-btn danger" style={{ width: '32px', height: '32px' }}><Trash2 size={14} /></button>}
-                             </div>
-                           </div>
-                         ))
-                       }
-                     </div>
-                   </div>
+                    <div className="skills-grid-premium">
+                      {mySkills.length === 0 ? (
+                        <div className="empty-box" style={{ width: '100%', gridColumn: '1 / -1' }}>No skills published yet. Build your stack!</div>
+                      ) : (
+                        mySkills.map(skill => (
+                          <SkillCard 
+                            key={skill._id || skill.id} 
+                            skill={skill} 
+                            currentUser={currentUser} 
+                            onDelete={() => handleDeleteSkill(skill)} 
+                            onEdit={() => openEditSkill(skill)}
+                          />
+                        ))
+                      )}
+                    </div>
                   </div>
-               )}
+                )}
 
                {activeTab === 'validations' && (
                  <div className="validations-v2">
@@ -510,7 +481,8 @@ function Profile() {
                   {['offer', 'request'].map(t => (
                     <label key={t} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontWeight: 950, color: skillForm.type === t ? '#2b6777' : '#94a3b8' }}>
                       <input type="radio" name="type" value={t} checked={skillForm.type === t} onChange={e => setSkillForm({...skillForm, type: e.target.value})} style={{ transform: 'scale(1.2)' }} />
-                      {t === 'offer' ? '⚡ PROVIDER' : '🎓 LEARNER'}
+                      {t === 'offer' ? <Handshake size={16} /> : <Search size={16} />}
+                      {t === 'offer' ? 'PROVIDER' : 'LEARNER'}
                     </label>
                   ))}
                 </div>

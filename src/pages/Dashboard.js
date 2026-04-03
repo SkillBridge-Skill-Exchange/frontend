@@ -103,8 +103,8 @@ function Dashboard() {
                  : "Start your journey by publishing your first technical skill to the campus network."}
             </p>
             <div className="welcome-actions">
-               <Link to="/skills" className="btn-elite primary" style={{ background: '#2b6777', color: 'white' }}>DISCOVER HUB <Search size={18} /></Link>
-               <Link to="/requests" className="btn-elite secondary" style={{ borderColor: '#e2e8f0' }}><Handshake size={18} /> SYNC LOGS</Link>
+               <Link to="/skills" className="btn-elite primary">DISCOVER HUB <Search size={18} /></Link>
+               <Link to="/requests" className="btn-elite secondary"><Handshake size={18} /> SYNC LOGS</Link>
             </div>
          </div>
 
@@ -135,7 +135,7 @@ function Dashboard() {
       </div>
 
       {/* 2. SYNC AGENDA & NEURAL MATCHES */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem', marginBottom: '4rem' }}>
+      <div className="middle-bento">
          {/* Real Agenda */}
          <div className="bento-card">
             <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
@@ -148,15 +148,15 @@ function Dashboard() {
                   </div>
                ) : (
                   agenda.map((act, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', padding: '0.85rem', background: '#f8fafc', borderRadius: '16px' }}>
-                       <div style={{ width: '36px', height: '36px', background: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: act.status === 'accepted' ? '#10b981' : '#f59e0b' }}>
+                    <div key={i} className="agenda-item-v3">
+                       <div style={{ width: '36px', height: '36px', background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: act.status === 'accepted' ? '#10b981' : '#f59e0b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}>
                           <Clock size={16} />
                        </div>
                        <div style={{ flex: 1 }}>
                           <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}>{act.sender_name || act.skill_name}</div>
-                          <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
+                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
                        </div>
-                       <Link to="/requests" style={{ color: '#2b6777' }}><ArrowRight size={14} /></Link>
+                       <Link to="/requests" style={{ color: 'var(--primary)', opacity: 0.8 }}><ArrowRight size={14} /></Link>
                     </div>
                   ))
                )}
@@ -168,8 +168,8 @@ function Dashboard() {
             <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
                NEURAL MATCHES <Sparkles size={18} color="#8b5cf6" />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
-               {matches.slice(0, 2).map((m, i) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+               {matches.slice(0, 3).map((m, i) => (
                  <div key={i} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '24px', position: 'relative', border: '1px solid #f1f5f9' }}>
                     <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', fontSize: '0.8rem', fontWeight: 950, color: getMatchColor(m.match_percentage) }}>{m.match_percentage}%</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
@@ -199,7 +199,7 @@ function Dashboard() {
       </div>
 
       {/* 3. BOTTOM BENTO ROW (Real Charts & Ranks) */}
-      <div className="bottom-bento" style={{ gap: '2rem' }}>
+      <div className="bottom-bento">
          {/* Live Demand Pulse */}
          <div className="bottom-card market-card" style={{ padding: '1.5rem' }}>
             <div className="section-title-elite" style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>LIVE DEMAND PULSE <Activity size={18} color="#52ab98" /></div>

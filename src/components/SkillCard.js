@@ -8,18 +8,21 @@
 import React, { useState } from 'react';
 import { 
   User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, 
-  CheckCircle, Briefcase, Search, MessageCircle, MoreVertical, Heart, X, Handshake
+  CheckCircle, Briefcase, Search, MessageCircle, MoreVertical, Heart, X, Handshake,
+  Mail
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api';
 
 const badgeConfig = {
-  beginner: { label: 'BEGINNER', color: '#3b82f6', bg: '#eff6ff', icon: <Star size={10} fill="#3b82f6" /> },
-  intermediate: { label: 'INTERMEDIATE', color: '#f59e0b', bg: '#fef3c7', icon: <Zap size={10} fill="#f59e0b" /> },
+  beginner: { label: 'BEGINNER', color: '#10b981', bg: '#f0fdf4', icon: <Star size={10} fill="#10b981" /> },
+  intermediate: { label: 'INTERMEDIATE', color: '#3b82f6', bg: '#eff6ff', icon: <Zap size={10} fill="#3b82f6" /> },
   advanced: { label: 'ADVANCED', color: '#8b5cf6', bg: '#f3e8ff', icon: <Award size={10} fill="#8b5cf6" /> },
-  expert: { label: 'EXPERT', color: '#ef4444', bg: '#fee2e2', icon: <Layers size={10} fill="#ef4444" /> },
+  expert: { label: 'EXPERT', color: '#f59e0b', bg: '#fffbeb', icon: <Award size={10} fill="#f59e0b" /> },
 };
 
-function SkillCard({ skill, currentUser, onDelete }) {
+function SkillCard({ skill, currentUser, onDelete, onEdit }) {
+  const navigate = useNavigate();
   const currentUserId = currentUser?._id || currentUser?.id;
   const skillUserId = skill.user_id?._id || skill.user_id || skill.owner?._id || skill.user?._id;
   const isOwnSkill = currentUserId && String(currentUserId) === String(skillUserId);
@@ -84,106 +87,101 @@ function SkillCard({ skill, currentUser, onDelete }) {
 
   return (
     <>
-      <div className="skill-card premium-hover">
-        {/* Top: Status Badges */}
-        <div className="card-top">
-          <span className={`type-tag ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`} style={{ 
-            background: skill.type === 'offer' ? '#f0fdf9' : '#eff6ff', 
-            color: skill.type === 'offer' ? '#0d9488' : '#2563eb',
-            border: `1px solid ${skill.type === 'offer' ? '#ccfbf1' : '#dbeafe'}`
+      <div className="skill-card premium-hover" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* Top: Status & Flow */}
+        <div className="card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+          <span className="type-tag" style={{ 
+            background: 'rgba(59, 130, 246, 0.08)', 
+            color: '#2563eb', 
+            padding: '0.4rem 0.8rem', 
+            borderRadius: '10px', 
+            fontSize: '0.7rem', 
+            fontWeight: 950, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            border: '1.25px solid rgba(59, 130, 246, 0.2)'
           }}>
-            {skill.type === 'offer' ? '⚡ PRODUCER' : '🎓 CONSUMER'}
+            <Briefcase size={12} /> {skill.type === 'offer' ? 'OFFERING' : 'SEEKING'}
           </span>
-          <span className="category-tag">{(skill.category || 'GENERAL').toUpperCase()}</span>
+          <span style={{ fontSize: '0.65rem', fontWeight: 950, color: '#94a3b8', letterSpacing: '0.1em' }}>
+            {(skill.category || 'DEVELOPMENT').toUpperCase()}
+          </span>
         </div>
 
-        {/* Body: Meta Content */}
-        <div className="card-body">
-          <h3 title={skill.skill_name}>{skill.skill_name}</h3>
+        {/* Body: Focus Node */}
+        <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 950, color: '#2b6777', textTransform: 'lowercase', margin: 0, letterSpacing: '-0.8px' }}>
+            {skill.skill_name}
+          </h2>
           
-          <p className="description-text">
-            {skill.description || "Experimental technical collaboration focused on knowledge exchange and peer-to-peer growth."}
-          </p>
-
-          <div className="proficiency-status">
-             <div style={{ 
-               background: level.bg, 
-               color: level.color, 
-               padding: '0.45rem 1rem', 
-               borderRadius: '12px', 
-               fontSize: '0.7rem', 
-               fontWeight: 950,
-               display: 'flex',
-               alignItems: 'center',
-               gap: '0.6rem',
-               border: `1px solid ${level.color}20`
-             }}>
-               {level.icon} {level.label}
-             </div>
+          <div style={{ 
+            background: 'rgba(59, 130, 246, 0.05)', 
+            color: '#3b82f6', 
+            padding: '0.65rem 1.25rem', 
+            borderRadius: '12px', 
+            fontSize: '0.8rem', 
+            fontWeight: 900,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            width: '100%'
+          }}>
+            <Star size={14} color="#3b82f6" /> {skill.proficiency_level ? skill.proficiency_level.charAt(0).toUpperCase() + skill.proficiency_level.slice(1) : 'Beginner'}
           </div>
+
+          <p className="description-text" style={{ fontSize: '0.95rem', color: '#64748b', fontWeight: 600, lineHeight: 1.5 }}>
+            {skill.description || "Experimental technical collaboration focused on knowledge exchange."}
+          </p>
         </div>
 
-        {/* Footer: Credibility & Actions */}
-        <div className="card-footer">
-          <div className="user-overview">
-            <div className="avatar-xs" style={{ background: `linear-gradient(135deg, ${level.color}, #1e293b)`, width: '42px', height: '42px', fontSize: '1rem', borderRadius: '14px' }}>
+        {/* Footer: User Identity & Neural Messaging */}
+        <div className="card-footer" style={{ borderTop: 'none', padding: 0, marginTop: '0.5rem' }}>
+          <div className="user-overview" style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '14px', flex: 1 }}>
+            <div className="avatar-xs" style={{ background: '#2b6777', width: '40px', height: '40px', fontSize: '1.1rem', borderRadius: '10px' }}>
               {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
             <div>
-              <div className="user-name" style={{ fontSize: '0.95rem' }}>{skill.user?.name || skill.owner?.name || 'Talented Peer'}</div>
-              <div className="user-subline" style={{ fontSize: '0.65rem', letterSpacing: '0.02em' }}>
-                {(skill.user?.college || skill.owner?.college || 'University Partner').toUpperCase()}
+              <div className="user-name" style={{ fontSize: '0.9rem', fontWeight: 950, color: '#1e293b' }}>
+                {(skill.user?.name || skill.owner?.name || 'Talented Peer').toUpperCase()}
+              </div>
+              <div className="user-subline" style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 800 }}>
+                University Partner
               </div>
             </div>
           </div>
           
-          <div className="card-actions">
-            {!isOwnSkill && currentUser && (
-              <>
-                <button 
-                  className={`icon-btn secondary ${endorsed ? 'active' : ''}`}
-                  onClick={handleEndorse}
-                  disabled={endorsing || endorsed}
-                  title="Verify Identity"
-                  style={{ borderRadius: '12px', width: '38px', height: '38px' }}
-                >
-                  {endorsed ? <Heart size={18} fill="#ef4444" color="#ef4444" /> : <ThumbsUp size={18} />}
-                </button>
-                <button 
-                  className={`icon-btn secondary ${reviewed ? 'active' : ''}`}
-                  onClick={() => setShowReviewModal(true)}
-                  disabled={reviewing || reviewed}
-                  title="Submit Insight"
-                  style={{ borderRadius: '12px', width: '38px', height: '38px' }}
-                >
-                  {reviewed ? <CheckCircle size={18} color="#f59e0b" /> : <Star size={18} />}
-                </button>
-                <button 
-                  className="icon-btn primary"
-                  onClick={handleRequest}
-                  disabled={requesting || requested}
-                  title="Synchronize"
-                  style={{ borderRadius: '12px', width: '38px', height: '38px' }}
-                >
-                  {requested ? <CheckCircle size={18} /> : <Handshake size={18} />}
-                </button>
-              </>
-            )}
-            {isOwnSkill && (
-              <button 
-                className="icon-btn danger" 
-                onClick={() => onDelete(skill.id || skill._id)} 
-                title="Decommission Listing"
-                style={{ borderRadius: '12px', width: '38px', height: '38px' }}
-              >
-                <Trash2 size={18} />
-              </button>
-            )}
-            {!currentUser && (
-                <button className="icon-btn secondary" title="Log in to collaborate" style={{ opacity: 0.5 }}>
-                    <MoreVertical size={18} />
-                </button>
-            )}
+          <div className="card-actions" style={{ display: 'flex', gap: '0.65rem', marginLeft: '0.75rem' }}>
+             <button 
+                className={`icon-btn secondary ${endorsed ? 'active' : ''}`}
+                onClick={handleEndorse}
+                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: '#64748b' }}
+             >
+                <ThumbsUp size={18} />
+             </button>
+             <button 
+                className={`icon-btn secondary`}
+                onClick={() => setShowReviewModal(true)}
+                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: '#64748b' }}
+             >
+                <Star size={18} />
+             </button>
+             
+             {/* Message Trigger: Works if requested/accepted or if manual pilot is active */}
+             <button 
+                className="icon-btn primary"
+                onClick={() => {
+                   if (requested) {
+                      navigate(`/messaging?user=${skillUserId}`);
+                   } else {
+                      handleRequest();
+                   }
+                }}
+                style={{ background: '#2b6777', color: 'white', borderRadius: '12px', width: '46px' }}
+                title={requested ? "Message Peer" : "Request Sync"}
+             >
+                {requested ? <Send size={20} /> : <Handshake size={20} />}
+             </button>
           </div>
         </div>
       </div>
