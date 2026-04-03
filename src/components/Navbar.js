@@ -37,11 +37,17 @@ function Navbar() {
 
   const fetchUnread = async () => {
     try {
-      const res = await API.get('/notifications');
-      const data = res.data.data || [];
-      setUnreadCount(data.filter(n => !n.is_read).length);
+      // General Notifications
+      const notifRes = await API.get('/notifications');
+      const notifData = notifRes.data.data || [];
+      setUnreadCount(notifData.filter(n => !n.is_read).length);
+
+      // Message Unread Count
+      const msgRes = await API.get('/messages/unread-count');
+      setMsgCount(msgRes.data.count || 0);
     } catch (err) {
       setUnreadCount(0);
+      setMsgCount(0);
     }
   };
 

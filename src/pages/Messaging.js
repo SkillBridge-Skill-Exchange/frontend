@@ -173,6 +173,7 @@ function Messaging() {
     } catch (err) { console.error(err); return []; }
   }, []);
 
+  // Polling for new messages in active chat
   useEffect(() => {
     const init = async () => {
       const convs = await fetchConversations();

@@ -1362,4 +1362,4 @@ nav { display: flex; gap: 1.25rem; align-items: center; }
   .messaging-layout { grid-template-columns: 1fr; height: calc(100vh - 80px); }
   .chat-sidebar { display: none; }
   .local-video-pip { width: 120px; height: 90px; bottom: 100px; right: 12px; }
-}
+}

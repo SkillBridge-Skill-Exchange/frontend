@@ -39,8 +39,15 @@ function Profile() {
     const fetchProfileData = async () => {
       setLoading(true);
       try {
-        const targetId = id || (currentUser?._id || currentUser?.id);
-        const visitorMode = id && id !== (currentUser?._id || currentUser?.id);
+        const currentId = currentUser?._id || currentUser?.id;
+        const targetId = id || currentId;
+        
+        if (!targetId) {
+          setLoading(false);
+          return;
+        }
+
+        const visitorMode = id && id !== currentId;
         setIsVisitor(visitorMode);
 
         if (visitorMode) {
@@ -75,7 +82,7 @@ function Profile() {
       finally { setLoading(false); }
     };
     fetchProfileData();
-  }, [id, currentUser]);
+  }, [id, currentUser?._id, currentUser?.id]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -378,14 +385,14 @@ function Profile() {
                     {reviews.length === 0 ? <div className="empty-box">No clinical reviews yet. Earn trust by completing collaborations!</div> : 
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
                         {reviews.map(r => (
-                          <div key={r.id || r._id} className="review-card-v2">
-                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                               <div className="avatar-xs" style={{ width: '44px', height: '44px', borderRadius: '14px' }}>
-                                 {r.reviewer?.name?.[0] || 'U'}
+                          <div key={r.id || r._id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                               <div style={{ width: '36px', height: '36px', background: '#f8fafc', color: '#1e293b', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                                 {(r.reviewer?.name || r.reviewer_id?.name)?.[0] || 'U'}
                                </div>
-                               <div style={{ flex: 1 }}>
-                                 <div style={{ fontWeight: 950, fontSize: '0.95rem', color: '#1e293b' }}>{r.reviewer?.name || 'Verified Peer'}</div>
-                                 <div style={{ display: 'flex', gap: '3px', color: '#f59e0b', marginTop: '0.25rem' }}>
+                               <div>
+                                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>{r.reviewer?.name || r.reviewer_id?.name || 'Anonymous User'}</div>
+                                 <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', marginTop: '2px' }}>
                                    {[...Array(5)].map((_, i) => (
                                      <Star key={i} size={14} fill={i < r.rating ? '#f59e0b' : 'none'} color={i < r.rating ? '#f59e0b' : '#e2e8f0'} />
                                    ))}
