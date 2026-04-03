@@ -248,7 +248,8 @@ export const SocketProvider = ({ children }) => {
   // Socket connection effect
   useEffect(() => {
     if (isAuthenticated && token) {
-      const newSocket = io(process.env.REACT_APP_API_URL, {
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const newSocket = io(API_URL, {
         auth: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,

@@ -6,6 +6,11 @@
   animation: fadeIn 0.5s ease-out;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .requests-header {
   margin-bottom: 1.75rem;
   text-align: center;
@@ -60,6 +65,19 @@
   transform: scale(1.02);
 }
 
+/* --- Section Headers --- */
+.section-header {
+  font-size: 0.95rem;
+  font-weight: 950;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 2px solid rgba(15, 43, 60, 0.04);
+}
+
 /* --- Cards --- */
 .req-list {
   display: flex;
@@ -70,19 +88,18 @@
 .req-card {
   background: white;
   border-radius: 20px;
-  padding: 1.25rem;
+  padding: 1.5rem;
   border: 1.5px solid #e8ece9;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
+  flex-direction: column;
+  gap: 1.25rem;
   transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
   box-shadow: 0 4px 10px rgba(15, 43, 60, 0.02);
+  position: relative;
 }
 
 .req-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow: 0 14px 28px rgba(15, 43, 60, 0.05);
   border-color: rgba(61, 139, 122, 0.15);
 }
@@ -90,14 +107,14 @@
 .req-card-left {
   display: flex;
   gap: 1.25rem;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
-  min-width: 260px;
 }
 
 .req-avatar {
   width: 46px;
   height: 46px;
+  min-width: 46px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--teal) 100%);
   color: white;
   border-radius: 14px;
@@ -143,37 +160,127 @@
   border-left: 3px solid #dce8e0;
 }
 
-/* --- Status & Actions --- */
-.req-card-right { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
+/* --- Lifecycle Bar --- */
+.lifecycle-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0.85rem 1rem;
+  background: #f8f7f4;
+  border-radius: 14px;
+  border: 1.5px solid #e8ece9;
+}
 
+.status-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  position: relative;
+}
+
+/* Connector line between steps */
+.status-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: calc(50% + 15px);
+  width: calc(100% - 30px);
+  height: 2px;
+  background: #dce8e0;
+  z-index: 0;
+}
+
+.status-step.completed:not(:last-child)::after {
+  background: var(--teal);
+}
+
+.status-step.active:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--teal), #dce8e0);
+}
+
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8ece9;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+  z-index: 1;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.status-step.active .step-dot {
+  background: var(--teal);
+  color: white;
+  border-color: rgba(61, 139, 122, 0.3);
+  box-shadow: 0 4px 12px rgba(61, 139, 122, 0.25);
+  transform: scale(1.1);
+}
+
+.status-step.completed .step-dot {
+  background: var(--primary);
+  color: white;
+}
+
+.step-label {
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.status-step.active .step-label {
+  color: var(--teal);
+}
+
+.status-step.completed .step-label {
+  color: var(--primary);
+}
+
+/* --- Status Badge --- */
 .req-status {
   padding: 0.5rem 1rem;
   border-radius: 50px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 950;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* --- Card Right / Actions --- */
+.req-card-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .req-actions {
   display: flex;
   gap: 0.6rem;
-  margin-top: 0.85rem;
 }
 
 .req-accepted-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .req-btn {
-  padding: 0.6rem 1.15rem;
+  padding: 0.65rem 1.25rem;
   border-radius: 12px;
   border: none;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 950;
   cursor: pointer;
   display: flex;
@@ -196,6 +303,7 @@
 .req-btn.decline {
   background: #f8f7f4;
   color: #ef4444;
+  border: 1.5px solid #fee2e2;
 }
 
 .req-btn.decline:hover {
@@ -205,27 +313,85 @@
 .req-btn.chat {
   background: var(--sky-light);
   color: var(--primary);
+  border: 1.5px solid #c8dce4;
 }
 
 .req-btn.chat:hover {
   background: var(--primary);
   color: white;
+  border-color: var(--primary);
 }
 
 .req-btn.review {
   background: #fef9ee;
   color: #d97706;
+  border: 1.5px solid #fef3c7;
 }
 
 .req-btn.review:hover {
   background: #fef3c7;
 }
 
+/* --- Urgency Badge --- */
+.urgency-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.62rem;
+  font-weight: 950;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  letter-spacing: 0.04em;
+  z-index: 2;
+}
+
+/* --- Campus / Department Badges --- */
+.req-badge-campus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background: #f8f7f4;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid #e8ece9;
+}
+
+/* --- Chat Icon Button --- */
+.btn-icon-action {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.btn-icon-action.chat {
+  background: var(--sky-light);
+  color: var(--primary);
+}
+
+.btn-icon-action.chat:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
 /* --- Review Inline --- */
 .review-inline {
   width: 100%;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  padding-top: 1.25rem;
   border-top: 2px dashed #e8ece9;
   animation: slideDown 0.35s ease-out;
 }
@@ -261,6 +427,7 @@
   font-family: inherit;
   resize: none;
   transition: all 0.3s;
+  box-sizing: border-box;
 }
 
 .review-textarea:focus {
@@ -270,7 +437,15 @@
   box-shadow: 0 8px 18px rgba(61, 139, 122, 0.06);
 }
 
+/* --- Empty States --- */
+.active-collab-section {
+  margin-bottom: 2rem;
+}
+
+/* --- Responsive --- */
 @media (max-width: 768px) {
-  .req-card { flex-direction: column; align-items: flex-start; }
-  .req-card-right { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .req-card-left { flex-direction: column; align-items: flex-start; }
+  .lifecycle-bar { gap: 0; }
+  .req-accepted-actions { flex-direction: column; }
+  .req-actions { flex-direction: column; }
 }

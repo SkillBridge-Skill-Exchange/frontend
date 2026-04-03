@@ -685,7 +685,7 @@ function Messaging() {
   // ─── MESSAGE RENDERER ───
   const renderMessage = (m) => {
     const isSent = String(m.sender_id) === myId;
-    const baseUrl = process.env.REACT_APP_API_URL;
+    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     
     // Message tick logic
     let tickIcon = null;

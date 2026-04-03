@@ -13,6 +13,7 @@ import {
   User, MessageCircle, ChevronDown, Trash2, X, MessageSquare,
   Building, GraduationCap, Zap
 } from 'lucide-react';
+import '../requests.css';
 
 function Requests() {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ function Requests() {
 
         {activeItems.length > 0 && (
           <div className="active-collab-section">
-             <h3 className="section-header" style={{ color: '#52ab98' }}><Zap size={18} /> Active Partnerships ({activeItems.filter(r => r.status !== 'completed').length})</h3>
+             <h3 className="section-header" style={{ color: '#3d8b7a' }}><Zap size={18} /> Active Partnerships ({activeItems.filter(r => r.status !== 'completed').length})</h3>
              {activeItems.map(r => renderRequestCard(r, activeTab, false))}
           </div>
         )}
@@ -190,7 +191,7 @@ function Requests() {
       <div key={r.id} className="req-card" style={{ position: 'relative', opacity: r.status === 'declined' ? 0.6 : 1 }}>
         {isRecent(r.createdAt) && isPending && <div className="urgency-badge"><Zap size={12} /> NEW</div>}
         <div className="req-card-left">
-          <div className="req-avatar" style={{ background: type === 'sent' ? '#52ab98' : '#2b6777' }}>
+          <div className="req-avatar" style={{ background: type === 'sent' ? 'linear-gradient(135deg, #3d8b7a, #2b6777)' : 'linear-gradient(135deg, #1b3a4b, #3d8b7a)' }}>
             {partner?.name?.[0]?.toUpperCase() || <User size={20} />}
           </div>
           <div className="req-info">
@@ -249,7 +250,7 @@ function Requests() {
              <h4>Rate Collaboration Completion</h4>
              <div className="star-selector">
                 {[1, 2, 3, 4, 5].map(s => (
-                  <Star key={s} size={28} fill={s <= reviewForm.rating ? '#52ab98' : 'none'} stroke={s <= reviewForm.rating ? '#52ab98' : '#cbd5e1'} onClick={() => setReviewForm({ ...reviewForm, rating: s })} />
+                  <Star key={s} size={28} fill={s <= reviewForm.rating ? '#3d8b7a' : 'none'} stroke={s <= reviewForm.rating ? '#3d8b7a' : '#cbd5e1'} onClick={() => setReviewForm({ ...reviewForm, rating: s })} />
                 ))}
              </div>
              <textarea placeholder="Feedback on this collaboration..." value={reviewForm.comment} onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })} className="review-textarea" rows={3} />
