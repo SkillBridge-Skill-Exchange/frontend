@@ -106,7 +106,7 @@ function Students() {
           </div>
 
           <button className="btn-clear" onClick={() => setFilters({search:'', department:'', year:''})}>
-             RESET PREFERANCES
+             RESET PREFERENCES
           </button>
         </aside>
 
