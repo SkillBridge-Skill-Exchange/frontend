@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { 
   User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, 
   CheckCircle, Briefcase, Search, MessageCircle, MoreVertical, Heart, X, Handshake,
-  Mail
+  Mail, Github, Globe
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
@@ -38,6 +38,22 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewing, setReviewing] = useState(false);
   const [reviewed, setReviewed] = useState(false);
+
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [loadingPortfolio, setLoadingPortfolio] = useState(false);
+  const [peerProfile, setPeerProfile] = useState(null);
+
+  const handleViewPortfolio = async () => {
+    setShowPortfolioModal(true);
+    setLoadingPortfolio(true);
+    try {
+      const res = await API.get(`/users/${skillUserId}`);
+      setPeerProfile(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoadingPortfolio(false);
+  };
 
   const handleRequest = async () => {
     setRequesting(true);
@@ -139,7 +155,7 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
         <div className="card-footer" style={{ borderTop: 'none', padding: 0 }}>
           <div 
              className="user-overview" 
-             onClick={() => navigate(`/profile/${skillUserId}`)}
+             onClick={handleViewPortfolio}
              style={{ 
                 background: 'rgba(241, 245, 249, 0.5)', 
                 padding: '0.85rem 1.15rem', 
@@ -241,6 +257,74 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
                 {reviewing ? 'SYNCHRONIZING...' : 'SUBMIT REPUTATION'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Glassmorphism Portfolio Subpage Modal */}
+      {showPortfolioModal && (
+        <div className="modal-overlay" style={{ background: 'rgba(15, 43, 60, 0.6)', backdropFilter: 'blur(10px)', zIndex: 9999 }} onClick={() => setShowPortfolioModal(false)}>
+          <div className="modal-content" style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(20px)', maxWidth: '650px', padding: '2.5rem', borderRadius: '24px', position: 'relative', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 20px 40px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
+            <button className="close-btn" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'white', color: '#1b3a4b', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: 'none', boxShadow: '0 4px 12px rgba(15, 43, 60, 0.1)' }} onClick={() => setShowPortfolioModal(false)}>
+               <X size={18} />
+            </button>
+
+            {loadingPortfolio ? (
+              <div style={{ textAlign: 'center', padding: '3rem' }}>
+                <div className="spinner-premium" style={{ margin: '0 auto' }}></div>
+                <p style={{ marginTop: '1.5rem', color: '#5a7d8a', fontWeight: 'bold' }}>Syncing student data...</p>
+              </div>
+            ) : peerProfile ? (
+              <div>
+                 <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', marginBottom: '2rem' }}>
+                   <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'linear-gradient(135deg, #1b3a4b, #3d8b7a)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 950, flexShrink: 0, boxShadow: '0 8px 16px rgba(27, 58, 75, 0.2)' }}>
+                     {peerProfile.name?.[0]?.toUpperCase()}
+                   </div>
+                   <div>
+                     <h2 style={{ fontSize: '1.8rem', fontWeight: 950, color: '#1b3a4b', margin: 0, letterSpacing: '-0.5px' }}>{peerProfile.name}</h2>
+                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.4rem' }}>
+                        {peerProfile.college && <span style={{ background: '#e8f4f0', color: '#2d7a6a', padding: '0.3rem 0.6rem', borderRadius: '8px', fontSize: '0.72rem', fontWeight: 800 }}><Briefcase size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '2px' }}/> {peerProfile.college}</span>}
+                        {peerProfile.year && <span style={{ background: '#f1f5f9', color: '#64748b', padding: '0.3rem 0.6rem', borderRadius: '8px', fontSize: '0.72rem', fontWeight: 800 }}>{peerProfile.year} Batch</span>}
+                     </div>
+                   </div>
+                 </div>
+
+                 {peerProfile.bio && (
+                   <p style={{ color: '#1b3a4b', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.6)', borderRadius: '14px', borderLeft: '4px solid #3d8b7a', fontWeight: 600 }}>
+                     "{peerProfile.bio}"
+                   </p>
+                 )}
+
+                 <h3 style={{ fontSize: '1.05rem', fontWeight: 950, color: '#1b3a4b', marginBottom: '1.25rem', borderBottom: '2px dashed #cbd5e1', paddingBottom: '0.5rem', letterSpacing: '0.05em' }}>TECHNICAL CONTRIBUTIONS <Layers size={16} /></h3>
+                 
+                 {peerProfile.portfolio && peerProfile.portfolio.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                      {peerProfile.portfolio.map(p => (
+                         <div key={p._id || p.id} style={{ background: 'white', padding: '1.25rem', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 10px rgba(15, 43, 60, 0.04)', transition: '0.3s' }}>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 950, color: '#1b3a4b', marginBottom: '0.4rem', textTransform: 'uppercase' }}>{p.title}</h4>
+                            <p style={{ color: '#5a7d8a', fontSize: '0.85rem', marginBottom: '0.85rem', lineHeight: 1.5, fontWeight: 600 }}>{p.description}</p>
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                              {p.project_link && <a href={p.project_link} target="_blank" rel="noreferrer" className="icon-btn" style={{ fontSize: '0.7rem', fontWeight: 900, color: '#3d8b7a', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', background: '#e8f4f0', padding: '0.4rem 0.8rem', borderRadius: '8px' }}><Globe size={14} /> DEMO</a>}
+                              {p.github_link && <a href={p.github_link} target="_blank" rel="noreferrer" className="icon-btn" style={{ fontSize: '0.7rem', fontWeight: 900, color: '#64748b', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.4rem 0.8rem', borderRadius: '8px' }}><Github size={14} /> REPO</a>}
+                            </div>
+                         </div>
+                      ))}
+                    </div>
+                 ) : (
+                    <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: '16px', color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', border: '1px dashed #cbd5e1' }}>
+                      No entries published yet.
+                    </div>
+                 )}
+                 
+                 <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                     <button onClick={() => navigate(`/profile/${skillUserId}`)} className="btn-publish" style={{ width: 'auto', padding: '0.8rem 1.5rem', background: '#1b3a4b', color: 'white', display: 'inline-flex', fontSize: '0.8rem' }}>
+                        OPEN FULL IDENTITY
+                     </button>
+                 </div>
+              </div>
+            ) : (
+               <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444', fontWeight: 800 }}>Failed to load connection data.</div>
+            )}
           </div>
         </div>
       )}
