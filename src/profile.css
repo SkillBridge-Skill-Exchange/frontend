@@ -1,27 +1,33 @@
-/* ===== PREMIUM PROFILE STYLES ===== */
+/* ===== ULTRA-PREMIUM PROFILE DESIGN ===== */
 
-.profile-page {
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+:root {
+  --profile-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+  --profile-accent: #52ab98;
+  --glass-effect: rgba(255, 255, 255, 0.7);
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
+.profile-page {
+  animation: slideInUp 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Hero & Avatar --- */
+/* --- Refined Hero Section --- */
 .profile-hero {
-  border-radius: 30px;
+  border-radius: 32px;
   overflow: hidden;
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   background: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: var(--profile-shadow);
 }
 
 .hero-bg {
   height: 160px;
-  background: linear-gradient(135deg, #2b6777 0%, #52ab98 100%);
+  background: linear-gradient(135deg, #1a424e 0%, #2b6777 40%, #52ab98 100%);
   position: relative;
 }
 
@@ -29,189 +35,131 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: url('https://www.transparenttextures.com/patterns/cubes.png');
-  opacity: 0.1;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .hero-details {
-  padding: 0 2.5rem 2rem;
-  margin-top: -60px;
+  padding: 0 3rem 2.5rem;
+  margin-top: -65px;
   position: relative;
   display: flex;
   align-items: flex-end;
-  gap: 1.75rem;
+  gap: 2rem;
   z-index: 10;
 }
 
-.avatar-wrapper {
-  position: relative;
-}
-
 .avatar-lg-v2 {
-  width: 120px;
-  height: 120px;
-  background: var(--primary);
-  color: white;
-  border: 7px solid white;
-  border-radius: 32px;
+  width: 130px;
+  height: 130px;
+  background: white;
+  color: var(--primary);
+  border: 8px solid white;
+  border-radius: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3.5rem;
+  font-size: 3rem;
   font-weight: 950;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-  transition: 0.4s;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .avatar-lg-v2:hover {
-  transform: rotate(-3deg) scale(1.05);
-}
-
-.online-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  background: #10b981;
-  border: 3.5px solid white;
-  border-radius: 50%;
+  transform: rotate(5deg) scale(1.05);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.18);
 }
 
 .user-main-info {
   flex: 1;
-  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .user-main-info h2 {
-  font-size: 2.4rem;
+  font-size: 2.22rem;
   font-weight: 950;
   color: #1e293b;
-  letter-spacing: -1.75px;
+  letter-spacing: -2px;
   line-height: 1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.hero-badges {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .user-title-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
   background: #f0fdf9;
-  color: #52ab98;
-  padding: 0.4rem 1rem;
+  color: #0d9488;
+  padding: 0.5rem 1.25rem;
   border-radius: 50px;
-  font-weight: 850;
-  font-size: 0.8rem;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.btn-icon-action {
-  width: 44px;
-  height: 44px;
-  background: white;
-  border: 2px solid #f1f5f9;
-  border-radius: 12px;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #64748b;
-  cursor: pointer;
-  transition: 0.2s;
+  gap: 0.5rem;
+  border: 1px solid #ccfbf1;
 }
 
-.btn-icon-action:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  transform: translateY(-3px);
-}
-
-/* --- Layout --- */
+/* --- Layout Structure --- */
 .profile-layout-v2 {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 2rem;
+  grid-template-columns: 320px 1fr;
+  gap: 3rem;
 }
 
 .sidebar-glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  padding: 1.75rem;
-  border-radius: 30px;
+  background: var(--glass-effect);
+  backdrop-filter: blur(25px);
+  padding: 2.5rem;
+  border-radius: 35px;
   border: 2px solid white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  box-shadow: var(--profile-shadow);
+  height: fit-content;
 }
 
 .sidebar-card {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .sidebar-card h3 {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 950;
   text-transform: uppercase;
   color: #94a3b8;
-  letter-spacing: 0.12em;
-  margin-bottom: 1.25rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.75rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
-.bio-text {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #64748b;
-  font-weight: 500;
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.15rem;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
-.stat-ring-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-}
-
-.stat-item-v2 {
-  text-align: center;
-  background: white;
-  padding: 1.25rem;
-  border-radius: 16px;
-  border: 1.5px solid #f1f5f9;
-}
-
-.stat-val-v2 {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 950;
-  color: var(--primary);
-}
-
-.stat-lab-v2 {
-  font-size: 0.65rem;
-  font-weight: 900;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-/* --- Content Area --- */
+/* --- Refined Content Area --- */
 .content-glass {
   background: white;
-  border-radius: 30px;
+  border-radius: 32px;
   padding: 2.25rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  box-shadow: var(--profile-shadow);
 }
 
 .tab-nav-v2 {
   display: flex;
-  gap: 3rem;
-  margin-bottom: 2rem;
-  border-bottom: 3px solid #f1f5f9;
+  gap: 3.5rem;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid #f1f5f9;
 }
 
 .tab-nav-v2 button {
@@ -223,7 +171,7 @@
   color: #94a3b8;
   cursor: pointer;
   position: relative;
-  transition: 0.3s;
+  transition: all 0.3s;
 }
 
 .tab-nav-v2 button.active {
@@ -233,132 +181,98 @@
 .tab-nav-v2 button.active::after {
   content: '';
   position: absolute;
-  bottom: -3px;
+  bottom: -2px;
   left: 0;
   width: 100%;
-  height: 4px;
+  height: 5px;
   background: var(--primary);
   border-radius: 10px;
 }
 
-/* --- Portfolio --- */
-.portfolio-v2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.75rem;
-}
-
+/* --- Modern Project Cards --- */
 .project-card-v2 {
-  background: #f8fafc;
-  border-radius: 24px;
+  background: white;
+  border-radius: 32px;
   overflow: hidden;
   border: 2px solid #f1f5f9;
-  transition: 0.4s;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .project-card-v2:hover {
-  transform: translateY(-8px);
-  border-color: rgba(82, 171, 152, 0.25);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+  transform: translateY(-12px);
+  border-color: var(--profile-accent);
+  box-shadow: 0 30px 60px rgba(82, 171, 152, 0.15);
 }
 
 .project-thumb {
-  height: 150px;
+  height: 180px;
   background-size: cover;
   background-position: center;
   position: relative;
-  overflow: hidden;
-}
-
-.project-thumb::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.4));
 }
 
 .project-body-v2 {
-  padding: 1.5rem;
+  padding: 2rem;
+  flex: 1;
 }
 
 .project-body-v2 h4 {
-  font-size: 1.2rem;
-  font-weight: 900;
+  font-size: 1.35rem;
+  font-weight: 950;
   color: #1e293b;
-  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.75rem;
 }
 
-.project-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-}
-
-.project-tag {
-  font-size: 0.6rem;
-  font-weight: 950;
-  background: white;
+.project-body-v2 p {
   color: #64748b;
-  padding: 0.2rem 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.7;
 }
 
-/* --- Modal Edit --- */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(43, 103, 119, 0.4);
-  backdrop-filter: blur(8px);
+/* --- Enhanced Validations & Reviews --- */
+.validation-card-v2 {
+  background: #f8fafc;
+  padding: 2rem;
+  border-radius: 28px;
+  border: 2px solid #f1f5f9;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
+  gap: 1.5rem;
+  align-items: flex-start;
+  transition: var(--transition-smooth);
 }
 
-.modal-content {
+.validation-card-v2:hover {
   background: white;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 35px;
-  padding: 3rem;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-  max-height: 90vh;
-  overflow-y: auto;
+  border-color: #d1fae5;
+  box-shadow: 0 15px 35px rgba(5, 150, 105, 0.08);
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+.review-card-v2 {
+  background: white;
+  padding: 2rem;
+  border-radius: 30px;
+  border: 2px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  transition: var(--transition-smooth);
 }
 
-.modal-header h2 {
-  font-size: 2rem;
-  font-weight: 950;
-  color: var(--primary);
-  letter-spacing: -1.5px;
-}
-
-.close-btn {
-  background: #f1f5f9;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
+.review-card-v2:hover {
+  transform: scale(1.02);
+  border-color: #fef3c7;
+  box-shadow: 0 20px 45px rgba(245, 158, 11, 0.1);
 }
 
 /* Responsiveness */
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .profile-layout-v2 { grid-template-columns: 1fr; }
-  .hero-details { padding: 0 1.5rem 1.5rem; flex-direction: column; align-items: center; text-align: center; margin-top: -80px; }
-  .user-main-info h2 { font-size: 2.2rem; }
+  .sidebar-glass { width: 100%; position: static; }
+}
+
+@media (max-width: 768px) {
+  .hero-details { padding: 0 2rem 2rem; flex-direction: column; align-items: center; text-align: center; }
+  .user-main-info h2 { font-size: 2.5rem; }
+  .avatar-lg-v2 { width: 140px; height: 140px; font-size: 3.5rem; }
 }

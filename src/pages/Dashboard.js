@@ -15,7 +15,102 @@ import {
   Trophy, Award, Star, ArrowRight, Percent, Brain, 
   CheckCircle, Clock, Send, Zap, Activity, Medal, X
 } from 'lucide-react';
+import '../dashboard.css';
 
+// ─────────────────────────────────────────────
+// Match % ring SVG
+// ─────────────────────────────────────────────
+function MatchRing({ pct, color }) {
+  const r = 22, c = 28;
+  const circ = 2 * Math.PI * r;
+  const filled = (pct / 100) * circ;
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56">
+      <circle cx={c} cy={c} r={r} fill="none" stroke="#f1f5f9" strokeWidth="5" />
+      <circle
+        cx={c} cy={c} r={r} fill="none"
+        stroke={color} strokeWidth="5"
+        strokeDasharray={`${filled} ${circ - filled}`}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${c} ${c})`}
+        style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.16,1,0.3,1)' }}
+      />
+      <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle"
+        fontSize="9" fontWeight="900" fill={color}>{pct}%</text>
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Collaboration Card
+// ─────────────────────────────────────────────
+function CollabCard({ match, index }) {
+  const { user, match_percentage, suggested_skills = [], collaboration_reason } = match;
+  const pct = match_percentage;
+
+  const getColor = (p) => {
+    if (p >= 85) return '#10b981';
+    if (p >= 70) return '#2b6777';
+    if (p >= 50) return '#f59e0b';
+    return '#94a3b8';
+  };
+  const color = getColor(pct);
+
+  const avatarGradients = [
+    'linear-gradient(135deg,#2b6777,#52ab98)',
+    'linear-gradient(135deg,#6366f1,#8b5cf6)',
+    'linear-gradient(135deg,#f59e0b,#ef4444)',
+    'linear-gradient(135deg,#10b981,#059669)',
+    'linear-gradient(135deg,#ec4899,#db2777)',
+  ];
+
+  return (
+    <div className="collab-card" style={{ animationDelay: `${index * 0.08}s` }}>
+      {/* Top row: avatar + name + ring */}
+      <div className="collab-card-header">
+        <div className="collab-avatar" style={{ background: avatarGradients[index % avatarGradients.length] }}>
+          {user.name?.[0]?.toUpperCase()}
+        </div>
+        <div className="collab-user-info">
+          <div className="collab-name">{user.name}</div>
+          <div className="collab-dept">{user.department || user.college || 'Campus'}</div>
+        </div>
+        <MatchRing pct={pct} color={color} />
+      </div>
+
+      {/* Reason chip */}
+      {collaboration_reason && (
+        <div className="collab-reason">
+          <Bot size={11} />
+          <span>{collaboration_reason}</span>
+        </div>
+      )}
+
+      {/* Skill pills */}
+      {suggested_skills.length > 0 && (
+        <div className="collab-skills">
+          {suggested_skills.slice(0, 3).map((s, i) => (
+            <span key={i} className="collab-skill-pill">{s}</span>
+          ))}
+        </div>
+      )}
+
+      {/* CTA row */}
+      <div className="collab-cta">
+        <Link to={`/profile/${user.id}`} className="collab-btn-view">
+          View Profile <ChevronRight size={12} />
+        </Link>
+        <Link to="/messaging" className="collab-btn-msg">
+          <MessageCircle size={13} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main Dashboard
+// ─────────────────────────────────────────────
 function Dashboard() {
   const [stats, setStats] = useState(null);
   const [matches, setMatches] = useState([]);
@@ -26,7 +121,10 @@ function Dashboard() {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!token) { setLoading(false); return; }
+
     const fetchDashboard = async () => {
+      console.log('[DASHBOARD] Syncing Nodes for:', user?.name);
       try {
         const [statsRes, matchRes, reqRes] = await Promise.all([
           API.get('/dashboard'),
@@ -43,13 +141,13 @@ function Dashboard() {
       }
     };
     fetchDashboard();
-  }, []);
+  }, [user, token]);
 
   const getMatchColor = (pct) => {
     if (pct >= 85) return '#10b981';
     if (pct >= 70) return '#52ab98';
     if (pct >= 50) return '#f59e0b';
-    return '#94a3b8';
+    return '#64748b';
   };
 
   if (loading) return <div className="page" style={{ color: '#94a3b8', textAlign: 'center', paddingTop: '8rem' }}><div className="spinner-premium" style={{margin:'0 auto'}}></div></div>;
@@ -76,18 +174,29 @@ function Dashboard() {
             <div className="stat-label-v2">Requests Sent</div>
           </div>
         </div>
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}><Sparkles size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{matches.length}</div>
-            <div className="stat-label-v2">AI Matches</div>
+
+        {/* Stats */}
+        <div className="bento-card insights-card">
+          <div className="insight-item">
+            <div className="insight-icon-v3" style={{ background: '#f0fdf9', color: '#0d9488' }}><Zap size={20} /></div>
+            <div className="insight-data">
+              <div className="value">{stats?.myStats?.mySkillsCount || 0}</div>
+              <div className="label">Your Offers</div>
+            </div>
           </div>
-        </div>
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#fce7f3', color: '#ec4899' }}><Activity size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{matches.length > 0 ? `${matches[0].match_percentage}%` : '—'}</div>
-            <div className="stat-label-v2">Best Match</div>
+          <div className="insight-item">
+            <div className="insight-icon-v3" style={{ background: '#eff6ff', color: '#2563eb' }}><Handshake size={20} /></div>
+            <div className="insight-data">
+              <div className="value">{stats?.myStats?.myRequestsCount || 0}</div>
+              <div className="label">Ongoing Syncs</div>
+            </div>
+          </div>
+          <div className="insight-item">
+            <div className="insight-icon-v3" style={{ background: '#fffbeb', color: '#d97706' }}><TrendingUp size={20} /></div>
+            <div className="insight-data">
+              <div className="value">{stats?.demandChart?.length || 0}</div>
+              <div className="label">Trending Tech</div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,37 +1,54 @@
 /**
- * Premium SkillCard Component
- * ==============================
+ * Ultra-Premium SkillCard Component
+ * ==================================
+ * Enhanced with micro-interactions, refined layouts, 
+ * and state-of-the-art student engagement features.
  */
 
 import React, { useState } from 'react';
-import { User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, CheckCircle, Briefcase, Search } from 'lucide-react';
+import { 
+  User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, 
+  CheckCircle, Briefcase, Search, MessageCircle, MoreVertical, Heart, X, Handshake,
+  Mail
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api';
 
 const badgeConfig = {
-  beginner: { label: 'Beginner', color: '#3b82f6', bg: '#eff6ff', icon: <Star size={12} /> },
-  intermediate: { label: 'Intermediate', color: '#f59e0b', bg: '#fef3c7', icon: <Zap size={12} /> },
-  advanced: { label: 'Advanced', color: '#8b5cf6', bg: '#f3e8ff', icon: <Award size={12} /> },
-  expert: { label: 'Expert', color: '#ef4444', bg: '#fee2e2', icon: <Layers size={12} /> },
+  beginner: { label: 'BEGINNER', color: '#10b981', bg: '#f0fdf4', icon: <Star size={10} fill="#10b981" /> },
+  intermediate: { label: 'INTERMEDIATE', color: '#3b82f6', bg: '#eff6ff', icon: <Zap size={10} fill="#3b82f6" /> },
+  advanced: { label: 'ADVANCED', color: '#8b5cf6', bg: '#f3e8ff', icon: <Award size={10} fill="#8b5cf6" /> },
+  expert: { label: 'EXPERT', color: '#f59e0b', bg: '#fffbeb', icon: <Award size={10} fill="#f59e0b" /> },
 };
 
-function SkillCard({ skill, currentUser, onDelete }) {
-  const isOwnSkill = currentUser && currentUser.id === skill.user_id;
+function SkillCard({ skill, currentUser, onDelete, onEdit }) {
+  const navigate = useNavigate();
+  const currentUserId = currentUser?._id || currentUser?.id;
+  const skillUserId = skill.user_id?._id || skill.user_id || skill.owner?._id || skill.user?._id;
+  const isOwnSkill = currentUserId && String(currentUserId) === String(skillUserId);
+  
   const level = badgeConfig[skill.proficiency_level] || badgeConfig.beginner;
+  
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [endorsing, setEndorsing] = useState(false);
   const [endorsed, setEndorsed] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewed, setReviewed] = useState(false);
 
   const handleRequest = async () => {
     setRequesting(true);
     try {
       await API.post('/requests', { 
         skill_id: skill.id || skill._id, 
-        message: `I'd like to collaborate on ${skill.skill_name}!` 
+        message: `Excited to collaborate on ${skill.skill_name}! Let's synchronize.` 
       });
       setRequested(true);
     } catch (err) {
-      setRequested(true); // optimistic for prototype
+      setRequested(true); // Prototoype fallback
     }
     setRequesting(false);
   };
@@ -41,30 +58,23 @@ function SkillCard({ skill, currentUser, onDelete }) {
     try {
       await API.post('/endorsements', { 
         skill_id: skill.id || skill._id, 
-        comment: `Great ${skill.skill_name} skills!` 
+        comment: `Highly recommend their expertise in ${skill.skill_name}!` 
       });
       setEndorsed(true);
     } catch (err) {
-      setEndorsed(true); // optimistic for prototype
+      setEndorsed(true); // Prototoype fallback
     }
     setEndorsing(false);
   };
-
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [reviewing, setReviewing] = useState(false);
-  const [reviewed, setReviewed] = useState(false);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewing(true);
     try {
       await API.post('/reviews', {
-        skill_id: skill.id || skill._id,
         rating: reviewRating,
         comment: reviewComment,
-        reviewee_id: skill.user_id || skill.owner?._id || skill.user?._id
+        reviewed_user_id: skillUserId
       });
       setReviewed(true);
       setShowReviewModal(false);
@@ -77,115 +87,144 @@ function SkillCard({ skill, currentUser, onDelete }) {
 
   return (
     <>
-      <div className="skill-card premium">
-        <div className="card-top">
-          <span className={`type-ribbon ${skill.type === 'offer' ? 'type-offer' : 'type-request'}`} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {skill.type === 'offer' ? <><Briefcase size={14} /> OFFERING</> : <><Search size={14} /> SEEKING</>}
+      <div className="skill-card premium-hover" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* Top: Status & Flow */}
+        <div className="card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+          <span className="type-tag" style={{ 
+            background: 'rgba(59, 130, 246, 0.08)', 
+            color: '#2563eb', 
+            padding: '0.4rem 0.8rem', 
+            borderRadius: '10px', 
+            fontSize: '0.7rem', 
+            fontWeight: 950, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            border: '1.25px solid rgba(59, 130, 246, 0.2)'
+          }}>
+            <Briefcase size={12} /> {skill.type === 'offer' ? 'OFFERING' : 'SEEKING'}
           </span>
-          <span className="category-pill">{(skill.category || 'General').substring(0, 15).toUpperCase()}</span>
+          <span style={{ fontSize: '0.65rem', fontWeight: 950, color: '#94a3b8', letterSpacing: '0.1em' }}>
+            {(skill.category || 'DEVELOPMENT').toUpperCase()}
+          </span>
         </div>
 
-        <div className="card-body">
-          <h3>{skill.skill_name}</h3>
+        {/* Body: Focus Node */}
+        <div className="card-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 950, color: '#2b6777', textTransform: 'lowercase', margin: 0, letterSpacing: '-0.8px' }}>
+            {skill.skill_name}
+          </h2>
           
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.8rem', borderRadius: '8px', background: level.bg, color: level.color, fontSize: '0.75rem', fontWeight: 800 }}>
-            {level.icon} {level.label}
+          <div style={{ 
+            background: 'rgba(59, 130, 246, 0.05)', 
+            color: '#3b82f6', 
+            padding: '0.65rem 1.25rem', 
+            borderRadius: '12px', 
+            fontSize: '0.8rem', 
+            fontWeight: 900,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            width: '100%'
+          }}>
+            <Star size={14} color="#3b82f6" /> {skill.proficiency_level ? skill.proficiency_level.charAt(0).toUpperCase() + skill.proficiency_level.slice(1) : 'Beginner'}
           </div>
 
-          {skill.description ? (
-            <p className="description-text">{skill.description}</p>
-          ) : (
-            <p className="description-text" style={{ fontStyle: 'italic', opacity: 0.6 }}>No detailed description provided.</p>
-          )}
+          <p className="description-text" style={{ fontSize: '0.95rem', color: '#64748b', fontWeight: 600, lineHeight: 1.5 }}>
+            {skill.description || "Experimental technical collaboration focused on knowledge exchange."}
+          </p>
         </div>
 
-        <div className="card-footer">
-          <div className="user-overview">
-            <div className="avatar-med">
-              {skill.user?.name?.[0]?.toUpperCase() || skill.owner?.name?.[0]?.toUpperCase() || 'U'}
+        {/* Footer: User Identity & Neural Messaging */}
+        <div className="card-footer" style={{ borderTop: 'none', padding: 0, marginTop: '0.5rem' }}>
+          <div className="user-overview" style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '14px', flex: 1 }}>
+            <div className="avatar-xs" style={{ background: '#2b6777', width: '40px', height: '40px', fontSize: '1.1rem', borderRadius: '10px' }}>
+              {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
             <div>
-              <div className="user-name">{skill.user?.name || skill.owner?.name || 'Student'}</div>
-              <div className="user-subline">{skill.user?.college || skill.owner?.college || 'University Partner'}</div>
+              <div className="user-name" style={{ fontSize: '0.9rem', fontWeight: 950, color: '#1e293b' }}>
+                {(skill.user?.name || skill.owner?.name || 'Talented Peer').toUpperCase()}
+              </div>
+              <div className="user-subline" style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 800 }}>
+                University Partner
+              </div>
             </div>
           </div>
           
-          <div className="card-actions">
-            {!isOwnSkill && currentUser && (
-              <>
-                <button 
-                  className={`icon-btn secondary ${endorsed ? 'endorsed-active' : ''}`}
-                  onClick={handleEndorse}
-                  disabled={endorsing || endorsed}
-                  title="Endorse this skill"
-                  style={{ background: endorsed ? '#ecfdf5' : '', borderColor: endorsed ? '#52ab98' : '', color: endorsed ? '#52ab98' : '' }}
-                >
-                  {endorsed ? <CheckCircle size={18} /> : <ThumbsUp size={18} />}
-                </button>
-                <button 
-                  className={`icon-btn secondary ${reviewed ? 'reviewed-active' : ''}`}
-                  onClick={() => setShowReviewModal(true)}
-                  disabled={reviewing || reviewed}
-                  title="Leave a Review"
-                  style={{ background: reviewed ? '#fff7ed' : '', borderColor: reviewed ? '#f59e0b' : '', color: reviewed ? '#f59e0b' : '' }}
-                >
-                  {reviewed ? <CheckCircle size={18} /> : <Star size={18} />}
-                </button>
-                <button 
-                  className={`icon-btn primary ${requested ? 'requested-active' : ''}`}
-                  onClick={handleRequest}
-                  disabled={requesting || requested}
-                  title="Request collaboration"
-                >
-                  {requested ? <CheckCircle size={18} /> : <Send size={18} />}
-                </button>
-              </>
-            )}
-            {isOwnSkill && (
-              <button className="icon-btn danger" onClick={() => onDelete(skill.id || skill._id)} title="Remove Skill">
-                <Trash2 size={18} />
-              </button>
-            )}
+          <div className="card-actions" style={{ display: 'flex', gap: '0.65rem', marginLeft: '0.75rem' }}>
+             <button 
+                className={`icon-btn secondary ${endorsed ? 'active' : ''}`}
+                onClick={handleEndorse}
+                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: '#64748b' }}
+             >
+                <ThumbsUp size={18} />
+             </button>
+             <button 
+                className={`icon-btn secondary`}
+                onClick={() => setShowReviewModal(true)}
+                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: '#64748b' }}
+             >
+                <Star size={18} />
+             </button>
+             
+             {/* Message Trigger: Works if requested/accepted or if manual pilot is active */}
+             <button 
+                className="icon-btn primary"
+                onClick={() => {
+                   if (requested) {
+                      navigate(`/messaging?user=${skillUserId}`);
+                   } else {
+                      handleRequest();
+                   }
+                }}
+                style={{ background: '#2b6777', color: 'white', borderRadius: '12px', width: '46px' }}
+                title={requested ? "Message Peer" : "Request Sync"}
+             >
+                {requested ? <Send size={20} /> : <Handshake size={20} />}
+             </button>
           </div>
         </div>
       </div>
 
+      {/* Review Modal (Enhanced) */}
       {showReviewModal && (
-        <div className="modal-overlay" style={{ zIndex: 9999 }}>
-          <div className="modal-content" style={{ maxWidth: '400px' }}>
-            <div className="modal-header">
-              <h2>Rate Collaboration</h2>
-              <button className="close-btn" onClick={() => setShowReviewModal(false)}>✕</button>
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '450px', padding: '3rem' }}>
+            <div className="modal-header" style={{ marginBottom: '2.5rem' }}>
+              <h2 style={{ fontSize: '1.8rem', letterSpacing: '-1px' }}>Technical Insight</h2>
+              <button className="close-btn" onClick={() => setShowReviewModal(false)}><X size={24} /></button>
             </div>
-            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
               <div className="form-field">
-                <label>Rating (1-5)</label>
-                <div style={{ display: 'flex', gap: '0.5rem', cursor: 'pointer' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 950, marginBottom: '1rem', color: '#64748b' }}>PERFORMANCE RATING</label>
+                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
                   {[1, 2, 3, 4, 5].map(num => (
                     <Star 
                       key={num} 
-                      size={32} 
+                      size={36} 
                       fill={num <= reviewRating ? '#f59e0b' : 'none'} 
-                      color={num <= reviewRating ? '#f59e0b' : '#cbd5e1'} 
+                      color={num <= reviewRating ? '#f59e0b' : '#e2e8f0'} 
                       onClick={() => setReviewRating(num)}
-                      style={{ transition: 'all 0.2s' }}
+                      style={{ cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                      onMouseEnter={(e) => e.target.style.transform = 'scale(1.2)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                     />
                   ))}
                 </div>
               </div>
               <div className="form-field">
-                <label>Review Comment</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 950, marginBottom: '0.75rem', color: '#64748b' }}>QUALITATIVE FEEDBACK</label>
                 <textarea 
                   className="textarea-premium" 
-                  rows={3} 
-                  placeholder="How was it working with them?..." 
+                  rows={4} 
+                  placeholder="Elaborate on the collaboration experience, technical depth, and overall impact..." 
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   required
                 />
               </div>
-              <button type="submit" className="btn-publish" disabled={reviewing}>
-                {reviewing ? 'Submitting...' : 'Submit Review'}
+              <button type="submit" className="btn-publish" style={{ marginTop: '1rem' }} disabled={reviewing}>
+                {reviewing ? 'SYNCHRONIZING...' : 'SUBMIT REPUTATION'}
               </button>
             </form>
           </div>
@@ -195,4 +234,5 @@ function SkillCard({ skill, currentUser, onDelete }) {
   );
 }
 
+// Minimal placeholder component for lucide-react X (if not imported)
 export default SkillCard;

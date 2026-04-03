@@ -5,8 +5,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { 
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
   User, MessageCircle, Building, GraduationCap, Zap
@@ -14,6 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 function Requests() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState({ sent: [], received: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('received');

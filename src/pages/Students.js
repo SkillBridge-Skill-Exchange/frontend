@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API from '../api';
 import PortfolioCard from '../components/PortfolioCard';
 import { useAuth } from '../context/AuthContext';
-import { Search, Filter, GraduationCap, Users } from 'lucide-react';
+import { Search, Filter, GraduationCap, Users, Sliders } from 'lucide-react';
 
 function Students() {
   const [students, setStudents] = useState([]);
@@ -10,7 +10,9 @@ function Students() {
   const [filters, setFilters] = useState({
     search: '',
     department: '',
+    year: '',
   });
+  const popularDepts = ['CSE', 'MECH', 'ECE', 'AI', 'DESIGN', 'BCA'];
   const { user } = useAuth();
 
   const handleFilterChange = (e) => {
@@ -27,6 +29,7 @@ function Students() {
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.department) params.append('department', filters.department);
+      if (filters.year) params.append('year', filters.year);
 
       const res = await API.get(`/users?${params.toString()}`);
       console.log('Collaborate Response:', res.data);
@@ -61,21 +64,50 @@ function Students() {
         
         <aside className="filters-sidebar">
           <div className="section-header">
-            <Filter size={18} /> Student Filters
+            <Sliders size={20} /> SYNC COLLABORATORS
           </div>
 
           <div className="filter-group">
-            <label>DEPARTMENT</label>
+            <label><GraduationCap size={14} /> ACADEMIC BATCH</label>
+            <div className="proficiency-pills">
+              {['1', '2', '3', '4', 'PG'].map(y => (
+                <button 
+                  key={y}
+                  onClick={() => setFilters({...filters, year: filters.year === y ? '' : y})}
+                  className={`prof-pill ${filters.year === y ? 'active' : ''}`}
+                >
+                  {y === 'PG' ? 'PG' : `${y}RD YEAR`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <label><Users size={14} /> MAJOR CLOUD</label>
+            <div className="category-cloud">
+               {popularDepts.map(dept => (
+                 <button 
+                   key={dept}
+                   onClick={() => setFilters({...filters, department: filters.department === dept ? '' : dept})}
+                   className={`cloud-tag ${filters.department === dept ? 'active' : ''}`}
+                 >
+                   {dept}
+                 </button>
+               ))}
+            </div>
             <input 
               type="text" 
               name="department" 
-              placeholder="e.g. CSE, Mechanical" 
+              placeholder="Or type department..." 
               value={filters.department} 
               onChange={handleFilterChange} 
+              style={{ marginTop: '0.8rem' }}
             />
           </div>
 
-          <button className="btn-clear" onClick={clearFilters}>Reset Filters</button>
+          <button className="btn-clear" onClick={() => setFilters({search:'', department:'', year:''})}>
+             RESET PREFERANCES
+          </button>
         </aside>
 
         <main className="explore-main">
@@ -90,10 +122,14 @@ function Students() {
             <input
               type="text"
               name="search"
-              placeholder="Search students by name, department or bio..."
+              placeholder="Search collaborators by name, bio or skill set..."
               value={filters.search}
               onChange={handleFilterChange}
             />
+          </div>
+
+          <div style={{ marginBottom: '1.5rem', fontSize: '0.8rem', fontWeight: 950, color: '#94a3b8', letterSpacing: '0.05em' }}>
+            {students.length} COLLABORATORS SYNCED ACROSS YOUR NETWORK
           </div>
 
           {loading ? (

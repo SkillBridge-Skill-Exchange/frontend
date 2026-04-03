@@ -4,6 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { Send, User, MessageCircle, Info, Search as SearchIcon, Clock, Check, CheckCheck } from 'lucide-react';
 
 function Messaging() {
+  const [searchParams] = useSearchParams();
+  const targetUserId = searchParams.get('user');
+  const scrollRef = useRef(null);
+  
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
@@ -56,8 +60,26 @@ function Messaging() {
     try {
       const res = await API.get(`/messages/${conv.id}`);
       setMessages(res.data.data || []);
+      setPolling(true);
     } catch (err) { console.error(err); }
   };
+
+  // Sync polling for new messages
+  useEffect(() => {
+    let interval;
+    if (polling && activeChat && !activeChat.isGhost) {
+       interval = setInterval(async () => {
+          try {
+             const res = await API.get(`/messages/${activeChat.id}`);
+             const newMsgs = res.data.data || [];
+             if (newMsgs.length !== messages.length) {
+                setMessages(newMsgs);
+             }
+          } catch (e) { /* silent sync */ }
+       }, 5000);
+    }
+    return () => clearInterval(interval);
+  }, [polling, activeChat, messages.length]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
