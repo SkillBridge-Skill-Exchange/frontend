@@ -37,42 +37,33 @@ function Profile() {
     const fetchProfileData = async () => {
       setLoading(true);
       try {
-        const targetId = id || (currentUser?._id || currentUser?.id);
-        const visitorMode = id && id !== (currentUser?._id || currentUser?.id);
+        const currentId = currentUser?._id || currentUser?.id;
+        const targetId = id || currentId;
+        
+        if (!targetId) {
+          setLoading(false);
+          return;
+        }
+
+        const visitorMode = id && id !== currentId;
         setIsVisitor(visitorMode);
 
-        if (visitorMode) {
-          // Public profile view
-          const res = await API.get(`/users/${id}`);
-          const data = res.data.data;
-          setProfileUser(data);
-          setPortfolio(data.portfolio || []);
-          setEndorsements(data.endorsements || []);
-          setReviews(data.reviews || []);
-          setMySkills(data.skills || []);
-        } else {
-          // My own private profile view
-          setProfileUser(currentUser);
-          const [portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
-            API.get('/portfolio'),
-            API.get('/endorsements/all'), 
-            API.get('/reviews/my'),
-            API.get('/skills')
-          ]);
-          setPortfolio(portfolioRes.data.data || []);
-          setEndorsements(endorseRes.data.data || []);
-          setReviews(reviewRes.data.data || []);
-          const allSkills = skillsRes.data.data || skillsRes.data || [];
-          setMySkills(allSkills.filter(s => {
-            const sid = s.user_id?._id || s.user_id;
-            return sid?.toString() === (currentUser?._id || currentUser?.id)?.toString();
-          }));
-        }
-      } catch (err) { console.error(err); } 
+        // Unified Profile Data Loading (aggregated by backend)
+        const res = await API.get(`/users/${targetId}`);
+        const data = res.data.data;
+        
+        setProfileUser(data);
+        setPortfolio(data.portfolio || []);
+        setEndorsements(data.endorsements || []);
+        setReviews(data.reviews || []);
+        setMySkills(data.skills || []);
+      } catch (err) { 
+        console.error("Profile Load Error:", err); 
+      } 
       finally { setLoading(false); }
     };
     fetchProfileData();
-  }, [id, currentUser?.id]);
+  }, [id, currentUser?._id, currentUser?.id]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -361,10 +352,10 @@ function Profile() {
                           <div key={r.id || r._id} style={{ background: '#fff', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                                <div style={{ width: '36px', height: '36px', background: '#f8fafc', color: '#1e293b', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
-                                 {r.reviewer?.name?.[0] || 'U'}
+                                 {(r.reviewer?.name || r.reviewer_id?.name)?.[0] || 'U'}
                                </div>
                                <div>
-                                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>{r.reviewer?.name || 'Anonymous User'}</div>
+                                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>{r.reviewer?.name || r.reviewer_id?.name || 'Anonymous User'}</div>
                                  <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', marginTop: '2px' }}>
                                    {[...Array(5)].map((_, i) => (
                                      <Star key={i} size={12} fill={i < r.rating ? '#f59e0b' : 'none'} color={i < r.rating ? '#f59e0b' : '#cbd5e1'} />
