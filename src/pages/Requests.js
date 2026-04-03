@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { 
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
   User, MessageCircle, ChevronDown, Trash2, X, MessageSquare
@@ -22,6 +23,7 @@ function Requests() {
   const [showReview, setShowReview] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRequests();
@@ -54,13 +56,24 @@ function Requests() {
     }
   };
 
-  const handleSendMessage = (targetId) => {
-    console.log('Synchronizing Neural Portal with Peer Node:', targetId);
-    if (!targetId) {
-       console.error('Critical Handshake Exception: Target Node ID missing in this segment.');
-       return;
+  const initializeChat = async (peerId) => {
+    if (!peerId) {
+      alert("We couldn't connect you right now (Missing peer profile data).");
+      return;
     }
-    navigate(`/messaging?user=${targetId}`);
+    try {
+      // Try to send an introductory message to create the conversation in the database
+      // It's perfectly fine if this errors out ideally because the conversation might already exist
+      await API.post('/messages', {
+        recipient_id: peerId,
+        content: '👋 Hi! Our collaboration handshake was accepted. Ready to start syncing?'
+      });
+    } catch (err) {
+      console.error('Chat init error:', err);
+    } finally {
+      // Always redirect to messages
+      navigate('/messaging');
+    }
   };
 
   const submitReview = async (userId) => {
@@ -117,9 +130,11 @@ function Requests() {
                 <div className="req-card-left">
                   <div className="req-avatar">{r.requester?.name?.[0] || 'U'}</div>
                   <div className="req-info">
-                    <div className="req-name">{r.requester?.name?.toUpperCase() || 'TALENTED PEER'}</div>
-                    <div className="req-skill">Proposes to exchange on <strong style={{ color: '#2b6777' }}>{r.skill?.skill_name.toUpperCase()}</strong></div>
-                    <div className="req-message">"{r.message || "Excited to collaborate!"}"</div>
+                    <div className="req-name">{r.requester?.name || 'Talented Peer'}</div>
+                    <div className="req-skill">
+                      Proposes to exchange on <strong style={{ color: '#2b6777' }}>{r.skill?.skill_name?.toUpperCase() || 'SKILL'}</strong>
+                    </div>
+                    <div className="req-message">"{r.message || "I saw your profile and would love to collaborate on this. Let's build something together!"}"</div>
                   </div>
                 </div>
                 <div className="req-card-right">
@@ -134,8 +149,8 @@ function Requests() {
                   )}
                   {r.status === 'accepted' && (
                     <div className="req-actions">
-                      <button className="btn-icon-action chat" onClick={() => handleSendMessage(r.requester?._id || r.requester?.id)} title="Open Message Portal">
-                        <MessageSquare size={20} />
+                      <button className="btn-icon-action chat" onClick={() => initializeChat(r.requester?._id || r.requester?.id)} title="Initialize Chat">
+                        <MessageCircle size={20} />
                       </button>
                       <button className="req-btn accept" onClick={() => setShowReview(r.id)} style={{ padding: '0.6rem 1.25rem', fontSize: '0.8rem' }}>
                         <Star size={16} /> ENDORSE
@@ -170,9 +185,11 @@ function Requests() {
                 <div className="req-card-left">
                   <div className="req-avatar" style={{ background: '#f1f5f9', color: '#64748b' }}><Send size={20} /></div>
                   <div className="req-info">
-                    <div className="req-name">TO: {(r.skill?.owner?.name || r.recipient_name || 'STUDENT PARTNER').toUpperCase()}</div>
-                    <div className="req-skill">Proposal regarding <strong>{r.skill?.skill_name.toUpperCase()}</strong></div>
-                    <div className="req-message">"{r.message || "Sent for technical synchronization."}"</div>
+                    <div className="req-name">TO: {r.skill?.owner?.name || r.recipient_name || 'STUDENT PARTNER'}</div>
+                    <div className="req-skill">
+                      Proposal regarding <strong>{r.skill?.skill_name?.toUpperCase() || 'SKILL'}</strong>
+                    </div>
+                    <div className="req-message">"{r.message || "Sent for technical collaboration."}"</div>
                   </div>
                 </div>
                 <div className="req-card-right">
@@ -180,16 +197,8 @@ function Requests() {
                     {statusConfig[r.status].icon} {statusConfig[r.status].label}
                   </div>
                   {r.status === 'accepted' && (
-                    <button 
-                      className="btn-icon-action chat" 
-                      onClick={() => {
-                        const targetId = r.skill?.owner?._id || r.skill?.owner?.id || r.skill?.user_id?._id || r.skill?.user_id;
-                        handleSendMessage(targetId);
-                      }} 
-                      title="Open Message Portal"
-                      style={{ color: '#2563eb' }}
-                    >
-                        <MessageSquare size={20} />
+                    <button className="btn-icon-action chat" onClick={() => initializeChat(r.skill?.owner?._id || r.skill?.owner?.id)} title="Initialize Chat">
+                        <MessageCircle size={20} />
                     </button>
                   )}
                 </div>
