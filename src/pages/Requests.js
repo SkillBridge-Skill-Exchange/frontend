@@ -8,9 +8,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Handshake, CheckCircle, XCircle, Clock, Send, Star, 
-  User, MessageCircle, Building, GraduationCap, Zap
+import {
+  Handshake, CheckCircle, XCircle, Clock, Send, Star,
+  User, MessageCircle, ChevronDown, Trash2, X, MessageSquare,
+  Building, GraduationCap, Zap
 } from 'lucide-react';
 
 function Requests() {
@@ -135,8 +136,35 @@ function Requests() {
           </div>
         )}
 
-        {pendingItems.length === 0 && activeItems.length === 0 && (
-          <div className="empty-box">No collaborations found! Go explore some skills.</div>
+        {activeTab === 'sent' && (
+          requests.sent.length === 0 ? (
+            <div className="empty-box" style={{ padding: '8rem 2rem' }}>No outgoing handshakes sent. Discovery some nodes to begin.</div>
+          ) : (
+            requests.sent.map(r => (
+              <div key={r.id} className="req-card">
+                <div className="req-card-left">
+                  <div className="req-avatar" style={{ background: '#f1f5f9', color: '#64748b' }}><Send size={20} /></div>
+                  <div className="req-info">
+                    <div className="req-name">TO: {r.skill?.owner?.name || r.recipient_name || 'STUDENT PARTNER'}</div>
+                    <div className="req-skill">
+                      Proposal regarding <strong>{r.skill?.skill_name?.toUpperCase() || 'SKILL'}</strong>
+                    </div>
+                    <div className="req-message">"{r.message || "Sent for technical collaboration."}"</div>
+                  </div>
+                </div>
+                <div className="req-card-right">
+                  <div className="req-status" style={{ background: statusConfig[r.status].bg, color: statusConfig[r.status].color }}>
+                    {statusConfig[r.status].icon} {statusConfig[r.status].label}
+                  </div>
+                  {r.status === 'accepted' && (
+                    <button className="btn-icon-action chat" onClick={() => initializeChat(r.skill?.owner?._id || r.skill?.owner?.id)} title="Initialize Chat">
+                      <MessageCircle size={20} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )
         )}
       </div>
     </div>

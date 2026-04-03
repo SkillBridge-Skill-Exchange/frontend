@@ -33,6 +33,7 @@ function Profile() {
 
   const [editUser, setEditUser] = useState({ ...currentUser });
   const [newProject, setNewProject] = useState({ title: '', description: '', project_link: '', github_link: '' });
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -49,18 +50,35 @@ function Profile() {
         const visitorMode = id && id !== currentId;
         setIsVisitor(visitorMode);
 
-        // Unified Profile Data Loading (aggregated by backend)
-        const res = await API.get(`/users/${targetId}`);
-        const data = res.data.data;
-        
-        setProfileUser(data);
-        setPortfolio(data.portfolio || []);
-        setEndorsements(data.endorsements || []);
-        setReviews(data.reviews || []);
-        setMySkills(data.skills || []);
-      } catch (err) { 
-        console.error("Profile Load Error:", err); 
-      } 
+        if (visitorMode) {
+          // Public profile view
+          const res = await API.get(`/users/${id}`);
+          const data = res.data.data;
+          setProfileUser(data);
+          setPortfolio(data.portfolio || []);
+          setEndorsements(data.endorsements || []);
+          setReviews(data.reviews || []);
+          setMySkills(data.skills || []);
+          setIsBlocked(currentUser?.blockedUsers?.includes(id));
+        } else {
+          // My own private profile view
+          setProfileUser(currentUser);
+          const [portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
+            API.get('/portfolio'),
+            API.get('/endorsements/all'), 
+            API.get('/reviews/my'),
+            API.get('/skills')
+          ]);
+          setPortfolio(portfolioRes.data.data || []);
+          setEndorsements(endorseRes.data.data || []);
+          setReviews(reviewRes.data.data || []);
+          const allSkills = skillsRes.data.data || skillsRes.data || [];
+          setMySkills(allSkills.filter(s => {
+            const sid = s.user_id?._id || s.user_id;
+            return sid?.toString() === (currentUser?._id || currentUser?.id)?.toString();
+          }));
+        }
+      } catch (err) { console.error(err); } 
       finally { setLoading(false); }
     };
     fetchProfileData();
@@ -138,6 +156,16 @@ function Profile() {
     }
   };
 
+  const handleToggleBlock = async () => {
+    try {
+      const res = await API.put(`/users/profile/block/${id}`);
+      setIsBlocked(!isBlocked);
+      alert(res.data.message);
+    } catch (err) {
+      alert('Failed to update block status');
+    }
+  };
+
   if (loading) return (
     <div className="page" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="spinner-premium"></div>
@@ -175,6 +203,18 @@ function Profile() {
             <div style={{ display: 'flex', gap: '0.75rem', alignSelf: 'flex-start', paddingTop: '1rem' }}>
               <button className="icon-btn secondary" onClick={() => setShowEditModal(true)} title="Edit Profile">
                 <Pencil size={20} />
+              </button>
+            </div>
+          )}
+          {isVisitor && (
+            <div style={{ display: 'flex', gap: '0.75rem', alignSelf: 'flex-start', paddingTop: '1rem' }}>
+              <button 
+                className={`icon-btn ${isBlocked ? 'primary' : 'danger'}`} 
+                onClick={handleToggleBlock} 
+                title={isBlocked ? "Unblock User" : "Block User"}
+                style={{ width: 'auto', padding: '0 1.5rem', height: '42px', fontSize: '0.9rem', fontWeight: 700 }}
+              >
+                <X size={20} /> {isBlocked ? 'UNBLOCK' : 'BLOCK'}
               </button>
             </div>
           )}

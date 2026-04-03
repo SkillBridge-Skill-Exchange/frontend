@@ -19,15 +19,26 @@ function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [msgCount, setMsgCount] = useState(0);
+  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchUnread();
-      const interval = setInterval(fetchUnread, 30000); // Poll every 30s
+      
+      const interval = setInterval(() => {
+        fetchUnread();
+      }, 30000); // 30s polling
+      
       return () => clearInterval(interval);
     }
   }, [user, location.pathname]);
+
+  const fetchUnreadMessages = async () => {
+    try {
+      const res = await API.get('/messages/unread-count');
+      setUnreadMsgCount(res.data.count || 0);
+    } catch(err) {}
+  };
 
   const fetchUnread = async () => {
     try {
@@ -38,10 +49,10 @@ function Navbar() {
 
       // Message Unread Count
       const msgRes = await API.get('/messages/unread-count');
-      setMsgCount(msgRes.data.count || 0);
+      setUnreadMsgCount(msgRes.data.count || 0);
     } catch (err) {
       setUnreadCount(0);
-      setMsgCount(0);
+      setUnreadMsgCount(0);
     }
   };
 
@@ -81,10 +92,10 @@ function Navbar() {
                 <Handshake size={18} />
                 <span>Requests</span>
               </Link>
-              <Link to="/messaging" className={`nav-link-with-icon ${isActive('/messaging')}`} style={{ position: 'relative' }}>
+              <Link to="/messaging" className={`nav-link-with-icon ${isActive('/messaging')}`} style={{position: 'relative'}}>
                 <MessageSquare size={18} />
                 <span>Messages</span>
-                {msgCount > 0 && <span className="msg-badge-dot">{msgCount}</span>}
+                {unreadMsgCount > 0 && <span className="notif-badge" style={{position:'absolute', top: '-5px', right: '-15px', background:'#ef4444', color:'white', fontSize:'0.65rem', padding:'2px 5px', borderRadius:'10px'}}>{unreadMsgCount > 9 ? '9+' : unreadMsgCount}</span>}
               </Link>
               <Link to="/leaderboard" className={`nav-link-with-icon ${isActive('/leaderboard')}`}>
                 <Trophy size={18} />

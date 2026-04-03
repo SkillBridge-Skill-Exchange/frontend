@@ -1,13 +1,13 @@
 /**
- * App Component (Updated)
+ * App Component
  * ========================
- * Root component with all new routes for prototype features.
- * Manages auth state via localStorage token.
+ * Root component with all routes, SocketProvider, and global CallOverlay.
  */
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import CallOverlay from './components/CallOverlay';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Skills from './pages/Skills';
@@ -21,6 +21,7 @@ import Requests from './pages/Requests';
 import Leaderboard from './pages/Leaderboard';
 import Students from './pages/Students';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -35,30 +36,33 @@ const PublicRoute = ({ children }) => {
 function AppContent() {
   return (
     <Router>
-      <div className="app">
-        <Navbar />
-        <Routes>
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/login" element={<PublicRoute><Landing initialModal="login" /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Landing initialModal="register" /></PublicRoute>} />
-          
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/messaging" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/add-skill" element={<ProtectedRoute><AddSkill /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
-          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-          <Route path="/skills" element={<ProtectedRoute><Skills /></ProtectedRoute>} />
-          <Route path="/collaborate" element={<ProtectedRoute><Students /></ProtectedRoute>} />
-          
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/landing" />} />
-          <Route path="*" element={<Navigate to="/landing" />} />
-        </Routes>
-      </div>
+      <SocketProvider>
+        <div className="app">
+          <Navbar />
+          <CallOverlay />
+          <Routes>
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/login" element={<PublicRoute><Landing initialModal="login" /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Landing initialModal="register" /></PublicRoute>} />
+            
+            {/* Protected Routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/messaging" element={<ProtectedRoute><Messaging /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/:id" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/add-skill" element={<ProtectedRoute><AddSkill /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/requests" element={<ProtectedRoute><Requests /></ProtectedRoute>} />
+            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/skills" element={<ProtectedRoute><Skills /></ProtectedRoute>} />
+            <Route path="/collaborate" element={<ProtectedRoute><Students /></ProtectedRoute>} />
+            
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to="/landing" />} />
+            <Route path="*" element={<Navigate to="/landing" />} />
+          </Routes>
+        </div>
+      </SocketProvider>
     </Router>
   );
 }
