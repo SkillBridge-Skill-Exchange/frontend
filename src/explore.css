@@ -16,12 +16,14 @@
 .explore-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: flex-start;
-  padding: 2rem;
+  padding: 1.5rem 0;
   min-height: 100vh;
   background: var(--mesh-gradient);
   background-attachment: fixed;
+  max-width: 1520px;
+  margin: 0 auto;
 }
 
 /* --- Glass Sidebar --- */
@@ -238,13 +240,17 @@
 .skill-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 1.5rem;
+  border-radius: 24px;
+  padding: 2rem;
   border: var(--glass-border);
   transition: var(--transition-premium);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 440px;
 }
 
 .skill-card:hover {
@@ -286,9 +292,9 @@
 }
 
 .card-footer {
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 2.5px solid rgba(0,0,0,0.02);
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-top: 1.5px solid rgba(0,0,0,0.03);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -299,7 +305,7 @@
   font-size: 1.1rem;
 }
 
-.user-name { font-size: 1.15rem; font-weight: 900; }
+.user-name { font-size: 1rem; font-weight: 900; }
 
 /* Portfolio Card Passport */
 .portfolio-card {

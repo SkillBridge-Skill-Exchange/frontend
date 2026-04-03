@@ -136,17 +136,31 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
         </div>
 
         {/* Footer: User Identity & Neural Messaging */}
-        <div className="card-footer" style={{ borderTop: 'none', padding: 0, marginTop: '0.5rem' }}>
-          <div className="user-overview" style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '14px', flex: 1 }}>
-            <div className="avatar-xs" style={{ background: '#2b6777', width: '40px', height: '40px', fontSize: '1.1rem', borderRadius: '10px' }}>
+        <div className="card-footer" style={{ borderTop: 'none', padding: 0 }}>
+          <div 
+             className="user-overview" 
+             onClick={() => navigate(`/profile/${skillUserId}`)}
+             style={{ 
+                background: 'rgba(241, 245, 249, 0.5)', 
+                padding: '0.85rem 1.15rem', 
+                borderRadius: '16px', 
+                flex: 1, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.85rem',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+             }}
+          >
+            <div className="avatar-xs" style={{ background: '#2b6777', width: '38px', height: '38px', minWidth: '38px', borderRadius: '10px' }}>
               {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
-            <div>
-              <div className="user-name" style={{ fontSize: '0.9rem', fontWeight: 950, color: '#1e293b' }}>
+            <div style={{ overflow: 'hidden' }}>
+              <div className="user-name" style={{ fontSize: '1.05rem', fontWeight: 950, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {(skill.user?.name || skill.owner?.name || 'Talented Peer').toUpperCase()}
               </div>
-              <div className="user-subline" style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 800 }}>
-                University Partner
+              <div className="user-subline" style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 800 }}>
+                UNIVERSITY PARTNER
               </div>
             </div>
           </div>
