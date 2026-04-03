@@ -22,45 +22,49 @@ function Dashboard() {
   const [matches, setMatches] = useState([]);
   const [agenda, setAgenda] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const [errorStatus, setErrorStatus] = useState(null);
+  const { user, token } = useAuth();
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const [statsRes, matchRes, requestsRes] = await Promise.all([
-          API.get('/dashboard'),
-          API.get('/matches'),
-          API.get('/requests')
-        ]);
-        
-      if (statsRes.data.success) {
-        console.log('[FRONTEND] Dashboard Stats:', statsRes.data.data);
-        setStats(statsRes.data.data);
-      }
-      if (matchRes.data.success) {
-        console.log('[FRONTEND] Neural Matches:', matchRes.data.data.length);
-        setMatches(matchRes.data.data);
-      }
-      
-      // Use real requests as 'Agenda'
-      if (requestsRes.data.success) {
-         const allReqs = requestsRes.data.data || [];
-         console.log('[FRONTEND] Request Agenda:', allReqs.length);
-         // Filter for non-completed syncs to show as agenda
-         setAgenda(allReqs.filter(r => r.status !== 'completed').slice(0, 3));
-      }
-    } catch (err) {
-      console.error('[FRONTEND] Verification Failed:', err);
-      // Fallback to empty states if API fails
-      setStats(null);
-      setMatches([]);
-      setAgenda([]);
-    } finally {
+    // Prevent fetching if no token is available or if we are already fetching
+    if (!token) {
       setLoading(false);
+      return;
     }
+
+    const fetchDashboard = async () => {
+      console.log('[DASHBOARD] Syncing Nodes for:', user?.name);
+      try {
+        const statsRes = await API.get('/dashboard?t=' + Date.now());
+        if (statsRes.data?.success) {
+          console.log('[DASHBOARD] Stats:', statsRes.data.data);
+          setStats(statsRes.data.data);
+        }
+      } catch (e) { console.error('Stats Sync Error:', e); }
+
+      try {
+        const matchRes = await API.get('/matches?t=' + Date.now());
+        if (matchRes.data?.success) {
+          setMatches(matchRes.data.data || []);
+        }
+      } catch (e) { console.error('Match Sync Error:', e); }
+
+      try {
+        const requestsRes = await API.get('/requests?t=' + Date.now());
+        if (requestsRes.data?.success) {
+           const { sent = [], received = [] } = requestsRes.data.data || {};
+           const all = [...sent, ...received];
+           setAgenda(all.filter(r => r.status !== 'completed').slice(0, 3));
+        }
+      } catch (e) {
+        console.error('Agenda Sync Error:', e);
+      }
+
+      setErrorStatus(null);
+      setLoading(false);
     };
     fetchDashboard();
-  }, []);
+  }, [user, token]);
 
   const getMatchColor = (pct) => {
     if (pct >= 85) return '#10b981';
@@ -82,10 +86,17 @@ function Dashboard() {
       <div className="bento-grid">
          {/* Welcome Bento */}
          <div className="bento-card welcome-card">
-            <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.75rem', fontWeight: 900, color: '#0d9488' }}>
-               <Globe size={14} /> {user?.department?.toUpperCase() || 'GENERAL'} DIVISION
+            <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.7rem', fontWeight: 950, color: '#0d9488' }}>
+                  <Globe size={14} /> {user?.department?.toUpperCase() || 'GENERAL'} DIVISION
+               </div>
+               {stats?.debugVersion && (
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    {stats.debugVersion}
+                  </div>
+               )}
             </div>
-            <h1>Howdy, {user?.name.split(' ')[0]}!</h1>
+            <h1>Hello, {user?.name.split(' ')[0]}! {errorStatus && '!'}</h1>
             <p>
                {stats?.myStats?.mySkillsCount > 0 
                  ? `You are currently sharing ${stats.myStats.mySkillsCount} skills with the community.` 
