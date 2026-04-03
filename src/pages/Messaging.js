@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Send, User, MessageCircle, Info, Search as SearchIcon, Clock, Check, CheckCheck } from 'lucide-react';
@@ -14,7 +15,7 @@ function Messaging() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const scrollRef = useRef(null);
+  const [polling, setPolling] = useState(false);
   const { user } = useAuth();
 
   const currentUserId = String(user?.id || user?._id);

@@ -8,12 +8,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { 
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
   User, MessageCircle, Building, GraduationCap, Zap
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 function Requests() {
   const navigate = useNavigate();
@@ -23,7 +21,6 @@ function Requests() {
   const [showReview, setShowReview] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => { fetchRequests(); }, []);
 
