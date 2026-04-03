@@ -1,10 +1,8 @@
 /**
- * Enhanced Dashboard
- * ===================
- * Student activity dashboard with in-demand skills chart,
- * AI match suggestions with match %, and leaderboard preview.
- * Task Owners: Y. Praneel Kumar Reddy (Dashboard, Chart)
- *              Regella Krishna Saketh (AI match % display)
+ * Technical Campus Dashboard (Real Data Driven)
+ * ============================================
+ * A purely data-driven command center for campus skill-sharing.
+ * NO Hardcoded dummy data. Refreshes based on real backend API states.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -12,195 +10,246 @@ import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { 
-  TrendingUp, Users, MessageCircle, Sparkles, BarChart3, 
-  Trophy, Award, Star, ArrowRight, Percent, Brain, 
-  CheckCircle, Clock, Send, Zap, Activity, Medal
+  Users, MessageCircle, ArrowRight, Brain, 
+  CheckCircle, Clock, Send, Zap, Activity, Medal, Sparkle, Handshake,
+  Calendar, MapPin, Layout, Search, Sparkles, Filter, Globe,
+  Rocket, TrendingUp
 } from 'lucide-react';
+import '../dashboard.css';
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [agenda, setAgenda] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const [errorStatus, setErrorStatus] = useState(null);
+  const { user, token } = useAuth();
 
   useEffect(() => {
+    // Prevent fetching if no token is available or if we are already fetching
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const fetchDashboard = async () => {
+      console.log('[DASHBOARD] Syncing Nodes for:', user?.name);
       try {
-        const [statsRes, matchRes] = await Promise.all([
-          API.get('/dashboard'),
-          API.get('/matches')
-        ]);
-        setStats(statsRes.data.data);
-        setMatches(matchRes.data.data || []);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setStats({
-          myStats: { mySkillsCount: 0, myRequestsCount: 0 },
-          demandChart: [],
-          leaderboard: []
-        });
-        setMatches([]);
-      } finally {
-        setLoading(false);
+        const statsRes = await API.get('/dashboard?t=' + Date.now());
+        if (statsRes.data?.success) {
+          console.log('[DASHBOARD] Stats:', statsRes.data.data);
+          setStats(statsRes.data.data);
+        }
+      } catch (e) { console.error('Stats Sync Error:', e); }
+
+      try {
+        const matchRes = await API.get('/matches?t=' + Date.now());
+        if (matchRes.data?.success) {
+          setMatches(matchRes.data.data || []);
+        }
+      } catch (e) { console.error('Match Sync Error:', e); }
+
+      try {
+        const requestsRes = await API.get('/requests?t=' + Date.now());
+        if (requestsRes.data?.success) {
+           const { sent = [], received = [] } = requestsRes.data.data || {};
+           const all = [...sent, ...received];
+           setAgenda(all.filter(r => r.status !== 'completed').slice(0, 3));
+        }
+      } catch (e) {
+        console.error('Agenda Sync Error:', e);
       }
+
+      setErrorStatus(null);
+      setLoading(false);
     };
     fetchDashboard();
-  }, []);
+  }, [user, token]);
 
   const getMatchColor = (pct) => {
     if (pct >= 85) return '#10b981';
     if (pct >= 70) return '#52ab98';
     if (pct >= 50) return '#f59e0b';
-    return '#94a3b8';
+    return '#64748b';
   };
 
-  if (loading) return <div className="page" style={{ color: '#94a3b8', textAlign: 'center', paddingTop: '8rem' }}>Gathering student activity...</div>;
+  if (loading) return (
+    <div className="page" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="spinner-premium"></div>
+      <p style={{ marginTop: '2rem', fontStyle: 'italic', opacity: 0.6 }}>Gathering real-time campus data nodes...</p>
+    </div>
+  );
 
   return (
     <div className="page dashboard-page">
-      {/* HERO */}
-      <div className="dashboard-hero">
-        <h1>Welcome back, {user?.name}! <TrendingUp size={36} color="#52ab98" /></h1>
-        <p>Track your student activity and discover what's trending on campus.</p>
-      </div>
-
-      {/* STATS GRID (4 cards) */}
-      <div className="stats-grid-4">
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#eff6ff', color: '#2b6777' }}><Users size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{stats?.myStats.mySkillsCount || 0}</div>
-            <div className="stat-label-v2">Your Skills</div>
-          </div>
-        </div>
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#f0fdf4', color: '#10b981' }}><Send size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{stats?.myStats.myRequestsCount || 0}</div>
-            <div className="stat-label-v2">Requests Sent</div>
-          </div>
-        </div>
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}><Sparkles size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{matches.length}</div>
-            <div className="stat-label-v2">AI Matches</div>
-          </div>
-        </div>
-        <div className="stat-card-v2">
-          <div className="stat-icon" style={{ background: '#fce7f3', color: '#ec4899' }}><Activity size={22} /></div>
-          <div className="stat-data">
-            <div className="stat-value-v2">{matches.length > 0 ? `${matches[0].match_percentage}%` : '—'}</div>
-            <div className="stat-label-v2">Best Match</div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI MATCH SUGGESTIONS */}
-      <div className="dash-section">
-        <div className="dash-section-header">
-          <div className="section-header">
-            <Brain size={22} color="#8b5cf6" /> AI-Powered Match Suggestions
-          </div>
-          <Link to="/skills" className="see-all-link">View All <ArrowRight size={16} /></Link>
-        </div>
-        <div className="match-cards-grid">
-          {matches.slice(0, 4).map((m, i) => (
-            <div key={i} className="match-card-v2">
-              <div className="match-card-top">
-                <div className="match-avatar" style={{ background: getMatchColor(m.match_percentage) }}>
-                  {m.user.name?.[0]}
-                </div>
-                <div className="match-user-info">
-                  <div className="match-name">{m.user.name}</div>
-                  <div className="match-college">{m.user.college} • {m.user.department}</div>
-                </div>
-                <div className="match-percentage" style={{ color: getMatchColor(m.match_percentage) }}>
-                  <div className="match-pct-ring" style={{ '--pct-color': getMatchColor(m.match_percentage), '--pct': `${m.match_percentage}%` }}>
-                    <svg viewBox="0 0 36 36" className="pct-svg">
-                      <path className="pct-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      <path className="pct-fill" strokeDasharray={`${m.match_percentage}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style={{ stroke: getMatchColor(m.match_percentage) }} />
-                    </svg>
-                    <span className="pct-text">{m.match_percentage}%</span>
+      {/* 1. TOP BENTO ROW */}
+      <div className="bento-grid">
+         {/* Welcome Bento */}
+         <div className="bento-card welcome-card">
+            <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.7rem', fontWeight: 950, color: '#0d9488' }}>
+                  <Globe size={14} /> {user?.department?.toUpperCase() || 'GENERAL'} DIVISION
+               </div>
+               {stats?.debugVersion && (
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                    {stats.debugVersion}
                   </div>
-                </div>
-              </div>
-              <div className="match-skills-row">
-                {m.suggested_skills.map((s, j) => (
-                  <span key={j} className="match-skill-tag">{s}</span>
-                ))}
-              </div>
-              <div className="match-card-actions">
-                <button className="match-btn primary"><Send size={14} /> Request</button>
-                <button className="match-btn secondary"><MessageCircle size={14} /> Chat</button>
-              </div>
+               )}
             </div>
-          ))}
-        </div>
+            <h1>Hello, {user?.name.split(' ')[0]}! {errorStatus && '!'}</h1>
+            <p>
+               {stats?.myStats?.mySkillsCount > 0 
+                 ? `You are currently sharing ${stats.myStats.mySkillsCount} skills with the community.` 
+                 : "Start your journey by publishing your first technical skill to the campus network."}
+            </p>
+            <div className="welcome-actions">
+               <Link to="/skills" className="btn-elite primary" style={{ background: '#2b6777', color: 'white' }}>DISCOVER HUB <Search size={18} /></Link>
+               <Link to="/requests" className="btn-elite secondary" style={{ borderColor: '#e2e8f0' }}><Handshake size={18} /> SYNC LOGS</Link>
+            </div>
+         </div>
+
+         {/* Stats Bento */}
+         <div className="bento-card insights-card">
+            <div className="insight-item">
+               <div className="insight-icon-v3" style={{ background: '#f0fdf9', color: '#0d9488' }}><Zap size={20} /></div>
+               <div className="insight-data">
+                  <div className="value">{stats?.myStats?.mySkillsCount || 0}</div>
+                  <div className="label">Your Offers</div>
+               </div>
+            </div>
+            <div className="insight-item">
+               <div className="insight-icon-v3" style={{ background: '#eff6ff', color: '#2563eb' }}><Handshake size={20} /></div>
+               <div className="insight-data">
+                  <div className="value">{stats?.myStats?.myRequestsCount || 0}</div>
+                  <div className="label">Ongoing Syncs</div>
+               </div>
+            </div>
+            <div className="insight-item">
+               <div className="insight-icon-v3" style={{ background: '#fffbeb', color: '#d97706' }}><TrendingUp size={20} /></div>
+               <div className="insight-data">
+                  <div className="value">{stats?.demandChart?.length || 0}</div>
+                  <div className="label">Trending Tech</div>
+               </div>
+            </div>
+         </div>
       </div>
 
-      {/* BOTTOM GRID: Chart + Leaderboard */}
-      <div className="dashboard-content">
-        {/* IN-DEMAND SKILLS CHART */}
-        <div className="dashboard-column">
-          <div className="section-header">
-            <BarChart3 size={20} color="#52ab98" /> Most In-Demand Skills
-          </div>
-          <div className="chart-container">
-            {stats?.demandChart?.slice(0, 6).map((item, index) => {
-              const maxCount = stats.demandChart[0]?.count || 1;
-              const pct = (item.count / maxCount) * 100;
-              const colors = ['#2b6777', '#52ab98', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'];
-              return (
-                <div className="chart-bar-row" key={index}>
-                  <div className="chart-label">{item.skill_name}</div>
-                  <div className="chart-bar-wrapper">
-                    <div 
-                      className="chart-bar-fill" 
-                      style={{ 
-                        width: `${pct}%`, 
-                        background: `linear-gradient(90deg, ${colors[index % colors.length]}, ${colors[index % colors.length]}88)`,
-                        animationDelay: `${index * 0.1}s`
-                      }}
-                    />
-                  </div>
-                  <div className="chart-count">{item.count}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* LEADERBOARD PREVIEW */}
-        <div className="dashboard-column">
-          <div className="dash-section-header" style={{ marginBottom: '1.5rem' }}>
-            <div className="section-header">
-              <Trophy size={20} color="#f59e0b" /> Top Contributors
+      {/* 2. SYNC AGENDA & NEURAL MATCHES */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem', marginBottom: '4rem' }}>
+         {/* Real Agenda */}
+         <div className="bento-card">
+            <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
+               SYNC AGENDA <Calendar size={18} color="#2b6777" />
             </div>
-            <Link to="/leaderboard" className="see-all-link">View All <ArrowRight size={16} /></Link>
-          </div>
-          <div className="leaderboard-preview">
-            {stats?.leaderboard?.slice(0, 5).map((student, index) => (
-              <div key={student.id} className={`lb-preview-row ${index < 3 ? 'top-3' : ''}`}>
-                <div className={`lb-rank ${index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : ''}`}>
-                  {index < 3 ? (
-                    index === 0 ? <Trophy size={16} /> : <Medal size={16} />
-                  ) : (
-                    `#${index + 1}`
-                  )}
-                </div>
-                <div className="lb-user-avatar">{student.name?.[0]}</div>
-                <div className="lb-user-info">
-                  <div className="lb-user-name">{student.name}</div>
-                  <div className="lb-user-meta">{student.college}</div>
-                </div>
-                <div className="lb-score">
-                  <Zap size={12} /> {student.skillsCount} skills
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+            <div className="agenda-list">
+               {agenda.length === 0 ? (
+                  <div style={{ padding: '3rem 0', textAlign: 'center', opacity: 0.4, fontSize: '0.85rem' }}>
+                     No scheduled syncs found.
+                  </div>
+               ) : (
+                  agenda.map((act, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', padding: '0.85rem', background: '#f8fafc', borderRadius: '16px' }}>
+                       <div style={{ width: '36px', height: '36px', background: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: act.status === 'accepted' ? '#10b981' : '#f59e0b' }}>
+                          <Clock size={16} />
+                       </div>
+                       <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}>{act.sender_name || act.skill_name}</div>
+                          <div style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
+                       </div>
+                       <Link to="/requests" style={{ color: '#2b6777' }}><ArrowRight size={14} /></Link>
+                    </div>
+                  ))
+               )}
+            </div>
+         </div>
+
+         {/* Neural Matches (Real Data) */}
+         <div className="bento-card" style={{ padding: '1.75rem' }}>
+            <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
+               NEURAL MATCHES <Sparkles size={18} color="#8b5cf6" />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+               {matches.slice(0, 2).map((m, i) => (
+                 <div key={i} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '24px', position: 'relative', border: '1px solid #f1f5f9' }}>
+                    <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', fontSize: '0.8rem', fontWeight: 950, color: getMatchColor(m.match_percentage) }}>{m.match_percentage}%</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                       <div className="elite-avatar" style={{ width: '40px', height: '40px', fontSize: '1rem', background: `linear-gradient(135deg, ${getMatchColor(m.match_percentage)}, #1e293b)` }}>
+                          {m.user.name?.[0]}
+                       </div>
+                       <div style={{ overflow: 'hidden' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 950, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.user.name}</div>
+                          <div style={{ fontSize: '0.6rem', fontWeight: 800, color: '#94a3b8' }}>{m.user.department || 'CAMPUS'}</div>
+                       </div>
+                    </div>
+                    <div className="skill-pills-v2">
+                       {m.suggested_skills.slice(0, 2).map((s, j) => (
+                         <span key={j} className="skill-pill-v2" style={{ fontSize: '0.6rem', padding: '0.25rem 0.5rem' }}>{s.toUpperCase()}</span>
+                       ))}
+                    </div>
+                 </div>
+               ))}
+               {matches.length === 0 && (
+                  <div style={{ gridColumn: 'span 2', padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
+                     <Brain size={32} style={{ marginBottom: '0.5rem' }} />
+                     <p style={{ fontSize: '0.8rem' }}>Expand your skills to unlock real-time matches.</p>
+                  </div>
+               )}
+            </div>
+         </div>
+      </div>
+
+      {/* 3. BOTTOM BENTO ROW (Real Charts & Ranks) */}
+      <div className="bottom-bento" style={{ gap: '2rem' }}>
+         {/* Live Demand Pulse */}
+         <div className="bottom-card market-card" style={{ padding: '1.5rem' }}>
+            <div className="section-title-elite" style={{ marginBottom: '1.5rem', fontSize: '1.1rem' }}>LIVE DEMAND PULSE <Activity size={18} color="#52ab98" /></div>
+            <div className="chart-view-v3">
+               {(!stats || !stats.demandChart || stats.demandChart.length === 0) ? (
+                  <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4, fontSize: '0.8rem' }}>No technical activity detected.</div>
+               ) : (
+                  stats.demandChart.map((item, index) => {
+                     const maxCount = stats.demandChart[0]?.count || 1;
+                     const pct = (item.count / maxCount) * 100;
+                     const colors = ['#2b6777', '#52ab98', '#3b82f6', '#db2777'];
+                     return (
+                       <div className="elite-chart-row" key={index} style={{ marginBottom: '1rem' }}>
+                          <div className="chart-header-v3">
+                             <span style={{ fontSize: '0.75rem' }}>{item.skill_name}</span>
+                             <span style={{ fontSize: '0.7rem', color: colors[index % colors.length] }}>{item.count} NODES</span>
+                          </div>
+                          <div className="chart-track-v3" style={{ height: '6px' }}>
+                             <div className="chart-fill-v3" style={{ width: `${pct}%`, background: colors[index % colors.length], borderRadius: '10px' }}></div>
+                          </div>
+                       </div>
+                     );
+                  })
+               )}
+            </div>
+         </div>
+
+         {/* Elite Contributors */}
+         <div className="bottom-card leaderboard-card" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+               <div className="section-title-elite" style={{ marginBottom: 0, fontSize: '1.1rem' }}>TOP EXPERTS <Medal size={18} color="#f59e0b" /></div>
+               <Link to="/leaderboard" className="see-all-link" style={{ fontSize: '0.7rem' }}>ALL RANKINGS</Link>
+            </div>
+            <div className="elite-ranking-list">
+               {(!stats || !stats.leaderboard || stats.leaderboard.length === 0) ? (
+                  <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4, fontSize: '0.8rem' }}>Analysing contributions...</div>
+               ) : (
+                  stats.leaderboard.slice(0, 3).map((student, index) => (
+                    <div className="elite-ranker" key={student.id} style={{ padding: '0.65rem 0' }}>
+                       <div className="elite-avatar" style={{ width: '34px', height: '34px', fontSize: '0.85rem', background: '#f8fafc', color: '#1e293b' }}>{student.name?.[0]}</div>
+                       <div className="user-names">
+                          <h4 style={{ fontSize: '0.85rem' }}>{student.name}</h4>
+                          <p style={{ fontSize: '0.6rem' }}>{student.skillsCount} TECHNICAL OFFERS</p>
+                       </div>
+                       <div style={{ fontSize: '0.8rem', fontWeight: 950, color: '#10b981' }}>#{index + 1}</div>
+                    </div>
+                  ))
+               )}
+            </div>
+         </div>
       </div>
     </div>
   );
