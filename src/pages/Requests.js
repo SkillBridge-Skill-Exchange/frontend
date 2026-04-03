@@ -1,21 +1,22 @@
 /**
- * Collaboration Requests Page
- * =============================
- * Accept/Decline collaboration requests with status tracking.
- * Task Owner: Kolla Girish (Collaboration request) & Harini N (Reviews UI)
+ * Collaboration Requests Page (ULTRA-PREMIUM REFINEMENT)
+ * ====================================================
+ * Orchestrates technical handshakes and peer identity synchronization.
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Handshake, CheckCircle, XCircle, Clock, Send, Star, 
-  User, MessageCircle, ChevronDown, Trash2, X
+  User, MessageCircle, ChevronDown, Trash2, X, MessageSquare
 } from 'lucide-react';
 import '../requests.css';
 
 function Requests() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState({ sent: [], received: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('received');
@@ -34,11 +35,7 @@ function Requests() {
       setRequests(res.data.data || { sent: [], received: [] });
     } catch (err) {
       console.error(err);
-      // Mock data for prototype consistency
-      setRequests({
-        received: [],
-        sent: []
-      });
+      setRequests({ received: [], sent: [] });
     } finally {
       setLoading(false);
     }
@@ -52,7 +49,6 @@ function Requests() {
         received: requests.received.map(r => r.id === id ? { ...r, status } : r)
       });
     } catch (err) {
-      // Optimistic update for prototype simulation
       setRequests({
         ...requests,
         received: requests.received.map(r => r.id === id ? { ...r, status } : r)
@@ -87,9 +83,9 @@ function Requests() {
         rating: reviewForm.rating,
         comment: reviewForm.comment
       });
-      alert('Collaboration review successfully published!');
+      alert('Reputation metrics synchronized successfully!');
     } catch (err) {
-        alert('Review published locally for prototype demonstration.');
+      alert('Reputation updated locally.');
     }
     setShowReview(null);
     setReviewForm({ rating: 5, comment: '' });
@@ -104,7 +100,7 @@ function Requests() {
   if (loading) return (
     <div className="page" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="spinner-premium"></div>
-      <p style={{ marginTop: '2rem', fontStyle: 'italic', color: '#94a3b8' }}>Establishing request handshakes...</p>
+      <p style={{ marginTop: '2rem', fontStyle: 'italic', color: '#94a3b8' }}>Synchronizing handshake protocol...</p>
     </div>
   );
 
@@ -112,10 +108,9 @@ function Requests() {
     <div className="page requests-page">
       <div className="requests-header">
         <h1><Handshake size={56} style={{ color: 'var(--primary)' }} /> Collaboration Handshakes</h1>
-        <p>Orchestrate peer-to-peer technical exchanges and knowledge sharing.</p>
+        <p>Orchestrate peer-to-peer technical exchanges and campus network growth.</p>
       </div>
 
-      {/* TABS (State-of-the-art UI) */}
       <div className="req-tabs">
         <button className={activeTab === 'received' ? 'active' : ''} onClick={() => setActiveTab('received')}>
           INCOMING <span style={{ opacity: 0.6, fontSize: '0.9rem', fontWeight: 600 }}>({requests.received.length})</span>
@@ -125,11 +120,10 @@ function Requests() {
         </button>
       </div>
 
-      {/* REQUEST CARDS */}
       <div className="req-list">
         {activeTab === 'received' && (
           requests.received.length === 0 ? (
-            <div className="empty-box" style={{ padding: '8rem 2rem' }}>No incoming handshakes yet. Advertise your skills to get noticed!</div>
+            <div className="empty-box" style={{ padding: '8rem 2rem' }}>No incoming handshakes detected. Advertise your skills to expand your node.</div>
           ) : (
             requests.received.map(r => (
               <div key={r.id} className="req-card">
@@ -149,12 +143,8 @@ function Requests() {
                   </div>
                   {r.status === 'pending' && (
                     <div className="req-actions">
-                      <button className="req-btn accept" onClick={() => updateStatus(r.id, 'accepted')}>
-                        ACCEPT HANDSHAKE
-                      </button>
-                      <button className="req-btn decline" onClick={() => updateStatus(r.id, 'declined')}>
-                        DECLINE
-                      </button>
+                      <button className="req-btn accept" onClick={() => updateStatus(r.id, 'accepted')}>ACCEPT</button>
+                      <button className="req-btn decline" onClick={() => updateStatus(r.id, 'declined')}>DECLINE</button>
                     </div>
                   )}
                   {r.status === 'accepted' && (
@@ -163,41 +153,22 @@ function Requests() {
                         <MessageCircle size={20} />
                       </button>
                       <button className="req-btn accept" onClick={() => setShowReview(r.id)} style={{ padding: '0.6rem 1.25rem', fontSize: '0.8rem' }}>
-                        <Star size={16} /> ENDORSE PEER
+                        <Star size={16} /> ENDORSE
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* INLINE REVIEW FORM (Premium Aesthetic) */}
                 {showReview === r.id && (
-                  <div className="review-inline">
-                    <h4>Share Collaboration Feedback for {r.requester?.name}</h4>
-                    <div className="star-selector">
+                  <div className="review-inline" style={{ marginTop: '2rem', padding: '2rem', background: '#f8fafc', borderRadius: '24px' }}>
+                    <h4 style={{ fontWeight: 950, marginBottom: '1.5rem' }}>Synchronize Reputation for {r.requester?.name}</h4>
+                    <div className="star-selector" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
                       {[1, 2, 3, 4, 5].map(s => (
-                        <Star 
-                          key={s} 
-                          size={32} 
-                          fill={s <= reviewForm.rating ? '#f59e0b' : 'none'} 
-                          stroke={s <= reviewForm.rating ? '#f59e0b' : '#cbd5e1'}
-                          style={{ cursor: 'pointer', transition: '0.2s' }}
-                          onClick={() => setReviewForm({ ...reviewForm, rating: s })}
-                        />
+                        <Star key={s} size={32} fill={s <= reviewForm.rating ? '#f59e0b' : 'none'} color={s <= reviewForm.rating ? '#f59e0b' : '#cbd5e1'} onClick={() => setReviewForm({ ...reviewForm, rating: s })} style={{ cursor: 'pointer' }} />
                       ))}
                     </div>
-                    <textarea 
-                      placeholder="How was the technical exchange? Highlight their strengths..."
-                      value={reviewForm.comment}
-                      onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                      className="review-textarea"
-                      rows={4}
-                    />
-                    <div style={{ display: 'flex', gap: '1.25rem', marginTop: '1.75rem' }}>
-                      <button className="btn-publish" onClick={() => submitReview(r.requester?._id || r.requester?.id)} style={{ width: 'auto', padding: '0.8rem 2.5rem' }}>
-                        <Send size={18} /> SYNC REVIEW
-                      </button>
-                      <button className="icon-btn danger" onClick={() => setShowReview(null)} style={{ width: '48px', height: '48px' }}><X size={20} /></button>
-                    </div>
+                    <textarea placeholder="Describe the technical impact..." value={reviewForm.comment} onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })} className="textarea-premium" rows={3} />
+                    <button className="btn-publish" onClick={() => submitReview(r.requester?._id || r.requester?.id)} style={{ marginTop: '1.5rem', width: 'auto', padding: '0.8rem 2rem' }}>SEND REVIEW</button>
                   </div>
                 )}
               </div>
@@ -207,14 +178,12 @@ function Requests() {
 
         {activeTab === 'sent' && (
           requests.sent.length === 0 ? (
-            <div className="empty-box" style={{ padding: '8rem 2rem' }}>No outgoing handshakes. Start discovering skills to propose collaborations!</div>
+            <div className="empty-box" style={{ padding: '8rem 2rem' }}>No outgoing handshakes sent. Discovery some nodes to begin.</div>
           ) : (
             requests.sent.map(r => (
               <div key={r.id} className="req-card">
                 <div className="req-card-left">
-                  <div className="req-avatar" style={{ background: '#f8fafc', color: '#64748b', border: '2px solid #f1f5f9' }}>
-                    <Send size={24} />
-                  </div>
+                  <div className="req-avatar" style={{ background: '#f1f5f9', color: '#64748b' }}><Send size={20} /></div>
                   <div className="req-info">
                     <div className="req-name">TO: {r.skill?.owner?.name || r.recipient_name || 'STUDENT PARTNER'}</div>
                     <div className="req-skill">
@@ -224,7 +193,7 @@ function Requests() {
                   </div>
                 </div>
                 <div className="req-card-right">
-                  <div className="req-status" style={{ background: statusConfig[r.status].bg, color: statusConfig[r.status].color, border: `1px solid ${statusConfig[r.status].color}20` }}>
+                  <div className="req-status" style={{ background: statusConfig[r.status].bg, color: statusConfig[r.status].color }}>
                     {statusConfig[r.status].icon} {statusConfig[r.status].label}
                   </div>
                   {r.status === 'accepted' && (
