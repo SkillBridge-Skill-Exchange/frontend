@@ -155,11 +155,11 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
             <div className="avatar-xs" style={{ background: '#1b3a4b', width: '34px', height: '34px', minWidth: '34px', borderRadius: '9px' }}>
               {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div className="user-name" style={{ fontSize: '0.88rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {(skill.user?.name || skill.owner?.name || 'Talented Peer').toUpperCase()}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="user-name" style={{ fontSize: '0.9rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: '1.2', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                {skill.user?.name || skill.owner?.name || 'Talented Peer'}
               </div>
-              <div className="user-subline" style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 800 }}>
+              <div className="user-subline" style={{ fontSize: '0.65rem', color: '#5a7d8a', fontWeight: 800, marginTop: '2px' }}>
                 UNIVERSITY PARTNER
               </div>
             </div>
