@@ -28,7 +28,8 @@ function Register() {
       login(token, user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      const firstValidationError = err.response?.data?.errors?.[0]?.message;
+      setError(firstValidationError || err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ function Register() {
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.65rem', fontWeight: '950', color: '#a1a1aa', marginBottom: '0.6rem' }}>
                 <Lock size={14} /> PASSWORD
               </label>
-              <input type="password" name="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="input-premium" required />
+              <input type="password" name="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="input-premium" minLength={6} required />
             </div>
           </div>
 

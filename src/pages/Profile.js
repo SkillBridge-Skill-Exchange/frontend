@@ -52,13 +52,14 @@ function Profile() {
           setMySkills(data.skills || []);
         } else {
           // My own private profile view
-          setProfileUser(currentUser);
-          const [portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
+          const [profileRes, portfolioRes, endorseRes, reviewRes, skillsRes] = await Promise.all([
+            API.get('/users/profile'),
             API.get('/portfolio'),
             API.get('/endorsements/all'), 
             API.get('/reviews/my'),
             API.get('/skills')
           ]);
+          setProfileUser(profileRes.data.data || currentUser);
           setPortfolio(portfolioRes.data.data || []);
           setEndorsements(endorseRes.data.data || []);
           setReviews(reviewRes.data.data || []);
@@ -77,9 +78,20 @@ function Profile() {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      // In a real app, you'd call API.put('/users/profile', editUser)
-      // Since this is a prototype, we'll update the user in the context to simulate persistence
-      login(localStorage.getItem('token'), editUser); 
+      const payload = {
+        name: editUser.name,
+        college: editUser.college || '',
+        department: editUser.department || '',
+        year: editUser.year || '',
+        bio: editUser.bio || '',
+        github_url: editUser.github_url || '',
+        linkedin_url: editUser.linkedin_url || '',
+      };
+
+      const res = await API.put('/users/profile', payload);
+      const updatedUser = res.data?.data || editUser;
+      login(localStorage.getItem('token'), updatedUser);
+      setProfileUser(updatedUser);
       setShowEditModal(false);
       alert('Student profile updated successfully!');
     } catch (err) { console.error(err); }
