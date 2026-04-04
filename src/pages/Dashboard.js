@@ -3,6 +3,9 @@
  * ============================================
  * A purely data-driven command center for campus skill-sharing.
  * NO Hardcoded dummy data. Refreshes based on real backend API states.
+ *
+ * Includes AI-powered "People you may collaborate with" section
+ * that shows match percentages from the Python cosine similarity engine.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,7 +16,7 @@ import {
   Users, MessageCircle, ArrowRight, Brain, ChevronRight,
   CheckCircle, Clock, Send, Zap, Activity, Medal, Sparkle, Handshake,
   Calendar, MapPin, Layout, Search, Sparkles, Filter, Globe,
-  Rocket, TrendingUp, X
+  Rocket, TrendingUp, X, Eye
 } from 'lucide-react';
 import '../dashboard.css';
 
@@ -73,6 +76,13 @@ function Dashboard() {
     if (pct >= 70) return '#3d8b7a';
     if (pct >= 50) return '#f59e0b';
     return '#5a7d8a';
+  };
+
+  const getMatchGradient = (pct) => {
+    if (pct >= 85) return 'linear-gradient(135deg, #10b981, #059669)';
+    if (pct >= 70) return 'linear-gradient(135deg, #3d8b7a, #1b3a4b)';
+    if (pct >= 50) return 'linear-gradient(135deg, #f59e0b, #d97706)';
+    return 'linear-gradient(135deg, #5a7d8a, #1b3a4b)';
   };
 
   if (loading) return (
@@ -198,6 +208,116 @@ function Dashboard() {
                )}
             </div>
          </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+         PEOPLE YOU MAY COLLABORATE WITH — AI Recommendations
+         ═══════════════════════════════════════════════════════════ */}
+      <div className="bento-card collab-section" style={{ marginBottom: '2rem' }}>
+        <div className="collab-section-header">
+          <div className="collab-title-group">
+            <span className="collab-ai-badge">
+              <Sparkles size={10} /> AI-POWERED • COSINE SIMILARITY
+            </span>
+            <h2 className="collab-title">People you may collaborate with</h2>
+            <p className="collab-subtitle">
+              Based on your skill profile, proficiency levels, and complementary request–offer matching
+            </p>
+          </div>
+          <Link to="/collaborate" className="collab-see-all">
+            SEE ALL <ChevronRight size={14} />
+          </Link>
+        </div>
+
+        {matches.length > 0 ? (
+          <>
+            <div className="collab-cards-grid">
+              {matches.slice(0, 6).map((m, i) => (
+                <div
+                  key={m.user.id || i}
+                  className="collab-card"
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  {/* Card Header — Avatar + Name + Match % */}
+                  <div className="collab-card-header">
+                    <div
+                      className="collab-avatar"
+                      style={{ background: getMatchGradient(m.match_percentage) }}
+                    >
+                      {m.user.name?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div className="collab-user-info">
+                      <div className="collab-name">{m.user.name}</div>
+                      <div className="collab-dept">{m.user.department || m.user.college || 'CAMPUS'}</div>
+                    </div>
+                    {/* Match Percentage Ring */}
+                    <div className="collab-match-ring" style={{ '--match-color': getMatchColor(m.match_percentage) }}>
+                      <svg viewBox="0 0 36 36" className="collab-ring-svg">
+                        <path
+                          className="collab-ring-bg"
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path
+                          className="collab-ring-fill"
+                          strokeDasharray={`${m.match_percentage}, 100`}
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          style={{ stroke: getMatchColor(m.match_percentage) }}
+                        />
+                      </svg>
+                      <span className="collab-match-pct" style={{ color: getMatchColor(m.match_percentage) }}>
+                        {m.match_percentage}%
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Collaboration Reason */}
+                  <div className="collab-reason">
+                    <Brain size={12} />
+                    {m.collaboration_reason}
+                  </div>
+
+                  {/* Skill Pills */}
+                  <div className="collab-skills">
+                    {m.suggested_skills.slice(0, 3).map((skill, j) => (
+                      <span key={j} className="collab-skill-pill">{skill}</span>
+                    ))}
+                    {m.suggested_skills.length > 3 && (
+                      <span className="collab-skill-pill" style={{ opacity: 0.5 }}>
+                        +{m.suggested_skills.length - 3}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* CTA buttons */}
+                  <div className="collab-cta">
+                    <Link to={`/profile/${m.user.id}`} className="collab-btn-view">
+                      <Eye size={13} /> View Profile
+                    </Link>
+                    <Link to="/messaging" className="collab-btn-msg" title="Send Message">
+                      <MessageCircle size={14} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="collab-engine-note">
+              <Brain size={12} />
+              Ranked by cosine similarity engine • Proficiency-weighted vectors • Request↔Offer complementary bonus
+            </div>
+          </>
+        ) : (
+          <div className="collab-empty">
+            <div className="collab-empty-icon">
+              <Brain size={28} />
+            </div>
+            <h3>No Matches Yet</h3>
+            <p>Add skills to your profile to discover AI-powered collaboration recommendations.</p>
+            <Link to="/add-skill" className="btn-elite primary" style={{ marginTop: '0.75rem', fontSize: '0.75rem', padding: '0.6rem 1.2rem' }}>
+              <Zap size={14} /> ADD YOUR FIRST SKILL
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* 3. BOTTOM BENTO ROW (Real Charts & Ranks) */}
