@@ -96,6 +96,7 @@
   transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
   box-shadow: 0 4px 10px rgba(15, 43, 60, 0.02);
   position: relative;
+  margin-bottom: 2rem;
 }
 
 .req-card:hover {

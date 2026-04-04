@@ -21,11 +21,11 @@ const typeIcons = {
 };
 
 const typeColors = {
-  match: '#8b5cf6',
-  request: '#f59e0b',
-  message: '#2b6777',
-  endorsement: '#52ab98',
-  review: '#ec4899',
+  match: '#0284c7', // sky blue
+  request: '#3b82f6', // blue
+  message: '#2563eb', // royal blue
+  endorsement: '#0284c7', // sky blue
+  review: '#6366f1', // indigo
 };
 
 function Notifications() {
@@ -52,15 +52,23 @@ function Notifications() {
   const markAsRead = async (id) => {
     try {
       await API.patch(`/notifications/${id}/read`);
-    } catch (err) {}
-    setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setNotifications(prev => prev.map(n => (n._id === id || n.id === id) ? { ...n, is_read: true } : n));
+    } catch (err) {
+      console.error("Failed to mark as read", err);
+    }
   };
 
   const markAllRead = async () => {
-    for (const n of notifications.filter(n => !n.is_read)) {
-      try { await API.patch(`/notifications/${n.id}/read`); } catch (err) {}
+    try {
+      await API.patch('/notifications/read-all');
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (err) {
+      // Manual fallback loop
+      for (const n of notifications.filter(notif => !notif.is_read)) {
+        try { await API.patch(`/notifications/${n._id || n.id}/read`); } catch (e) {}
+      }
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     }
-    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
   };
 
   const timeAgo = (dateStr) => {
@@ -77,6 +85,7 @@ function Notifications() {
     notifications.filter(n => n.type === filter);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
+  const pendingItems = notifications.filter(n => !n.is_read && (n.type === 'request' || n.type === 'match'));
 
   if (loading) return <div className="page" style={{ textAlign: 'center', paddingTop: '8rem', color: '#94a3b8' }}>Loading notifications...</div>;
 
@@ -84,7 +93,7 @@ function Notifications() {
     <div className="page notifications-page">
       <div className="notif-header">
         <div>
-          <h1><Bell size={32} /> Notifications</h1>
+          <h3 className="section-header" style={{ marginBottom: '2rem', borderBottom: '2px solid rgba(27, 58, 75, 0.08)', paddingBottom: '0.75rem' }}><Clock size={18} /> Awaiting Decision ({pendingItems.length})</h3>
           <p>{unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}</p>
         </div>
         {unreadCount > 0 && (
@@ -118,18 +127,18 @@ function Notifications() {
         ) : (
           filtered.map(n => (
             <div 
-              key={n.id} 
-              className={`notif-item ${n.is_read ? '' : 'unread'}`}
-              onClick={() => markAsRead(n.id)}
+               key={n._id || n.id} 
+               className={`notif-item ${n.is_read ? '' : 'unread'}`}
+               onClick={() => markAsRead(n._id || n.id)}
             >
-              <div className="notif-icon" style={{ background: `${typeColors[n.type]}15`, color: typeColors[n.type] }}>
+              <div className="notif-icon" style={{ background: `${typeColors[n.type] || '#ccc'}15`, color: typeColors[n.type] || '#ccc' }}>
                 {typeIcons[n.type] || <Bell size={20} />}
               </div>
               <div className="notif-body">
-                <div className="notif-title">{n.title}</div>
+                <div className="notif-title" style={{ fontWeight: n.is_read ? 700 : 900 }}>{n.title}</div>
                 <div className="notif-content">{n.content}</div>
                 <div className="notif-time">
-                  <Clock size={12} /> {timeAgo(n.createdAt)}
+                   {timeAgo(n.createdAt)}
                 </div>
               </div>
               {!n.is_read && <div className="notif-dot" />}

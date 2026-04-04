@@ -72,17 +72,15 @@ function Dashboard() {
   }, [user, token]);
 
   const getMatchColor = (pct) => {
-    if (pct >= 85) return '#10b981';
-    if (pct >= 70) return '#3d8b7a';
-    if (pct >= 50) return '#f59e0b';
-    return '#5a7d8a';
+    if (pct >= 75) return '#059669'; // High potential
+    if (pct >= 50) return '#ea580c'; // Moderate overlap
+    return '#64748b'; // Basic parity
   };
 
   const getMatchGradient = (pct) => {
-    if (pct >= 85) return 'linear-gradient(135deg, #10b981, #059669)';
-    if (pct >= 70) return 'linear-gradient(135deg, #3d8b7a, #1b3a4b)';
-    if (pct >= 50) return 'linear-gradient(135deg, #f59e0b, #d97706)';
-    return 'linear-gradient(135deg, #5a7d8a, #1b3a4b)';
+    if (pct >= 75) return 'linear-gradient(135deg, #059669, #10b981)';
+    if (pct >= 50) return 'linear-gradient(135deg, #ea580c, #f97316)';
+    return 'linear-gradient(135deg, #475569, #94a3b8)';
   };
 
   if (loading) return (
@@ -144,68 +142,33 @@ function Dashboard() {
                </div>
             </div>
          </div>
-      </div>
 
-      {/* 2. SYNC AGENDA & NEURAL MATCHES */}
-      <div className="middle-bento">
-         {/* Real Agenda */}
-         <div className="bento-card">
-            <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
-               SYNC AGENDA <Calendar size={16} color="#1b3a4b" />
+         {/* LIVE ACTIVITY - NEW BENTO */}
+         <div className="bento-card activity-card" style={{ gridColumn: 'span 2', background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)', border: '1.5px solid #bae6fd' }}>
+            <div className="section-title-elite" style={{ color: '#10b981', background: '#ecfdf5', padding: '0.25rem 0.75rem', borderRadius: '6px', width: 'fit-content', border: 'none', marginBottom: '1.5rem' }}>
+               QUICK TOOLKIT
             </div>
-            <div className="agenda-list">
-               {agenda.length === 0 ? (
-                  <div style={{ padding: '3rem 0', textAlign: 'center', opacity: 0.4, fontSize: '0.85rem' }}>
-                     No scheduled syncs found.
-                  </div>
-               ) : (
-                  agenda.map((act, i) => (
-                    <div key={i} className="agenda-item-v3">
-                       <div style={{ width: '36px', height: '36px', background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: act.status === 'accepted' ? '#10b981' : '#f59e0b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}>
-                          <Clock size={16} />
-                       </div>
-                       <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '0.78rem', fontWeight: 950, color: '#1b3a4b' }}>{act.sender_name || act.skill_name}</div>
-                          <div style={{ fontSize: '0.6rem', color: '#5a7d8a', fontWeight: 700 }}>{act.status?.toUpperCase()} • REAL-TIME DATA</div>
-                       </div>
-                       <Link to="/requests" style={{ color: 'var(--primary)', opacity: 0.8 }}><ArrowRight size={14} /></Link>
-                    </div>
-                  ))
-               )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+               <Link to="/skills" className="activity-node">
+                  <div className="node-val" style={{ color: '#0ea5e9' }}><Globe size={24} /></div>
+                  <div className="node-lab" style={{ color: '#0369a1' }}>EXPLORE</div>
+               </Link>
+               <Link to="/collaborate" className="activity-node">
+                  <div className="node-val" style={{ color: '#0d9488' }}><Handshake size={24} /></div>
+                  <div className="node-lab" style={{ color: '#0f766e' }}>NETWORK</div>
+               </Link>
+               <Link to="/requests" className="activity-node">
+                  <div className="node-val" style={{ color: '#f59e0b' }}><TrendingUp size={24} /></div>
+                  <div className="node-lab" style={{ color: '#9a3412' }}>SYNC LOGS</div>
+               </Link>
+               <Link to="/messaging" className="activity-node">
+                  <div className="node-val" style={{ color: '#8b5cf6' }}><MessageCircle size={24} /></div>
+                  <div className="node-lab" style={{ color: '#7c3aed' }}>MESSAGES</div>
+               </Link>
             </div>
-         </div>
-
-         {/* Neural Matches (Real Data) */}
-         <div className="bento-card" style={{ padding: '1.75rem' }}>
-            <div className="section-title-elite" style={{ marginBottom: '1.5rem' }}>
-               NEURAL MATCHES <Sparkles size={18} color="#8b5cf6" />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-               {matches.slice(0, 3).map((m, i) => (
-                 <div key={i} style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '24px', position: 'relative', border: '1px solid #f1f5f9' }}>
-                    <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', fontSize: '0.8rem', fontWeight: 950, color: getMatchColor(m.match_percentage) }}>{m.match_percentage}%</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                       <div className="elite-avatar" style={{ width: '36px', height: '36px', fontSize: '0.9rem', background: `linear-gradient(135deg, ${getMatchColor(m.match_percentage)}, #1b3a4b)` }}>
-                          {m.user.name?.[0]}
-                       </div>
-                       <div style={{ overflow: 'hidden' }}>
-                          <div style={{ fontSize: '0.78rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.user.name}</div>
-                          <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#5a7d8a' }}>{m.user.department || 'CAMPUS'}</div>
-                       </div>
-                    </div>
-                    <div className="skill-pills-v2">
-                       {m.suggested_skills.slice(0, 2).map((s, j) => (
-                         <span key={j} className="skill-pill-v2" style={{ fontSize: '0.6rem', padding: '0.25rem 0.5rem' }}>{s.toUpperCase()}</span>
-                       ))}
-                    </div>
-                 </div>
-               ))}
-               {matches.length === 0 && (
-                  <div style={{ gridColumn: 'span 2', padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
-                     <Brain size={32} style={{ marginBottom: '0.5rem' }} />
-                     <p style={{ fontSize: '0.8rem' }}>Expand your skills to unlock real-time matches.</p>
-                  </div>
-               )}
+            {/* Unified Footer */}
+            <div className="pulse-indicator" style={{ borderTop: '1px solid #bae6fd', paddingTop: '1rem', marginTop: '1rem' }}>
+               <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#0369a1', opacity: 0.8, letterSpacing: '0.1em' }}>SELECT A MODULE TO INITIATE SESSION</span>
             </div>
          </div>
       </div>
@@ -216,18 +179,17 @@ function Dashboard() {
       <div className="bento-card collab-section" style={{ marginBottom: '2rem' }}>
         <div className="collab-section-header">
           <div className="collab-title-group">
-            <span className="collab-ai-badge">
-              <Sparkles size={10} /> AI-POWERED • COSINE SIMILARITY
-            </span>
             <h2 className="collab-title">People you may collaborate with</h2>
             <p className="collab-subtitle">
               Based on your skill profile, proficiency levels, and complementary request–offer matching
             </p>
           </div>
-          <Link to="/collaborate" className="collab-see-all">
+          <Link to="/collaborate" className="collab-see-all" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px' }}>
             SEE ALL <ChevronRight size={14} />
           </Link>
         </div>
+
+
 
         {matches.length > 0 ? (
           <>
@@ -300,11 +262,6 @@ function Dashboard() {
                 </div>
               ))}
             </div>
-
-            <div className="collab-engine-note">
-              <Brain size={12} />
-              Ranked by cosine similarity engine • Proficiency-weighted vectors • Request↔Offer complementary bonus
-            </div>
           </>
         ) : (
           <div className="collab-empty">
@@ -360,13 +317,42 @@ function Dashboard() {
                   <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4, fontSize: '0.8rem' }}>Analysing contributions...</div>
                ) : (
                   stats.leaderboard.slice(0, 3).map((student, index) => (
-                    <div className="elite-ranker" key={student.id} style={{ padding: '0.65rem 0' }}>
-                       <div className="elite-avatar" style={{ width: '32px', height: '32px', fontSize: '0.78rem', background: '#f8f7f4', color: '#1b3a4b' }}>{student.name?.[0]}</div>
-                       <div className="user-names">
-                          <h4 style={{ fontSize: '0.85rem' }}>{student.name}</h4>
-                          <p style={{ fontSize: '0.6rem' }}>{student.skillsCount} TECHNICAL OFFERS</p>
+                    <div className="elite-ranker" key={student.id} style={{ 
+                      padding: '1rem', 
+                      background: index === 0 ? '#fafaf9' : 'transparent',
+                      borderRadius: '16px',
+                      border: index === 0 ? '1px solid #f59e0b33' : 'none',
+                      marginBottom: '0.4rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1rem'
+                    }}>
+                       <div className="elite-avatar" style={{ 
+                         width: '40px', 
+                         height: '40px', 
+                         fontSize: '1rem', 
+                         background: index === 0 ? '#f59e0b' : '#f1f5f9', 
+                         color: index === 0 ? 'white' : '#1e293b',
+                         borderRadius: '12px',
+                         boxShadow: index === 0 ? '0 4px 12px rgba(245, 158, 11, 0.2)' : 'none'
+                       }}>
+                          {student.name?.[0]}
                        </div>
-                       <div style={{ fontSize: '0.8rem', fontWeight: 950, color: '#10b981' }}>#{index + 1}</div>
+                       <div className="user-names" style={{ flex: 1 }}>
+                          <h4 style={{ fontSize: '0.95rem', fontWeight: 900, color: '#1e293b' }}>{student.name}</h4>
+                          <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', marginTop: '1px' }}>
+                             {student.skillsCount} Technical {student.skillsCount === 1 ? 'Entry' : 'Offers'}
+                          </p>
+                       </div>
+                       <div style={{ 
+                         fontSize: '1.2rem', 
+                         fontWeight: 950, 
+                         color: index === 0 ? '#f59e0b' : index === 1 ? '#94a3b8' : '#b45309',
+                         opacity: 0.9,
+                         fontFamily: 'DM Sans'
+                       }}>
+                          #{index + 1}
+                       </div>
                     </div>
                   ))
                )}

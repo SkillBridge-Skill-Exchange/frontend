@@ -214,7 +214,7 @@ function Messaging() {
       // Emit mark as read
       if (socket) {
         if (conv.isGroup) {
-          socket.emit('mark_as_read', { conversationId: conv.id, senderId: myId }); // senderId is dummy here since backend handles groups uniquely
+          socket.emit('mark_as_read', { conversationId: conv.id, senderId: myId });
         } else {
           const partner = String(conv.user1?.id || conv.user1_id_str) === myId ? conv.user2 : conv.user1;
           const pId = String(partner?.id || partner?._id);
@@ -222,6 +222,26 @@ function Messaging() {
         }
       }
     } catch (err) { console.error(err); }
+  };
+
+  const handleDeleteConversation = async (e, convId) => {
+    e.stopPropagation();
+    if (convId === 'ghost') {
+      if (activeChat?.id === 'ghost') setActiveChat(null);
+      return;
+    }
+    if (!window.confirm('Are you sure you want to delete this chat from your view?')) return;
+    try {
+      await API.delete(`/messages/conversation/${convId}`);
+      setConversations(prev => prev.filter(c => c.id !== convId && c._id !== convId));
+      if (activeChat && (activeChat.id === convId || activeChat._id === convId)) {
+        setActiveChat(null);
+      }
+      showToast('Chat deleted successfully');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete chat');
+    }
   };
 
   // ─── GET PEER ID / PARTNER ───
@@ -869,7 +889,19 @@ function Messaging() {
                          lastMsg?.content?.substring(0, 35) || 'Group Chat'}
                       </div>
                     </div>
-                    {lastMsg?.createdAt && <span className="contact-time">{formatTime(lastMsg.createdAt)}</span>}
+                    {lastMsg?.createdAt && (
+                      <div className="contact-meta-end" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
+                        <span className="contact-time">{formatTime(lastMsg.createdAt)}</span>
+                        <button 
+                          className="delete-chat-btn" 
+                          onClick={(e) => handleDeleteConversation(e, conv.id)}
+                          style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px', opacity: 0, transition: 'opacity 0.2s' }}
+                          title="Delete Chat"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -1372,6 +1404,12 @@ function Messaging() {
 
       <style>
         {`
+          .contact-row-msg:hover .delete-chat-btn {
+            opacity: 1 !important;
+          }
+          .delete-chat-btn:hover {
+            color: #ef4444 !important;
+          }
           .msg-bubble:hover .msg-options-trigger {
             display: flex !important;
             opacity: 1 !important;

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import SkillCard from '../components/SkillCard';
 import { 
   ExternalLink, Github, Trash2, Plus, Star, Award, Mail, MapPin, 
-  Linkedin, Globe, Edit3, X, Check, Zap, BookOpen, Pencil, Building, GraduationCap, Handshake, Search, Brain
+  Linkedin, Globe, Edit3, X, Check, Zap, BookOpen, Pencil, Building, GraduationCap, Handshake, Search, Brain, Clock
 } from 'lucide-react';
 import '../profile.css';
 
@@ -32,8 +32,18 @@ function Profile() {
   const [skillForm, setSkillForm] = useState({ skill_name: '', category: '', proficiency_level: 'beginner', description: '', type: 'offer' });
 
   const [editUser, setEditUser] = useState({ ...currentUser });
-  const [newProject, setNewProject] = useState({ title: '', description: '', project_link: '', github_link: '' });
+  const [newProject, setNewProject] = useState({ title: '', description: '', project_link: '', github_link: '', image_url: '' });
+  const [editingProject, setEditingProject] = useState(null);
+  const [newExperience, setNewExperience] = useState({ title: '', company: '', duration: '', description: '' });
+  const [editingExperience, setEditingExperience] = useState(null);
+  const [newEducation, setNewEducation] = useState({ school: '', degree: '', year: '' });
+  const [editingEducation, setEditingEducation] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
+  
+  const [experience, setExperience] = useState([]);
+  const [education, setEducation] = useState([]);
+  const [showExpModal, setShowExpModal] = useState(false);
+  const [showEduModal, setShowEduModal] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -77,6 +87,8 @@ function Profile() {
             const sid = s.user_id?._id || s.user_id;
             return sid?.toString() === (currentUser?._id || currentUser?.id)?.toString();
           }));
+          setExperience(currentUser.experience || []);
+          setEducation(currentUser.education || []);
         }
       } catch (err) { console.error(err); } 
       finally { setLoading(false); }
@@ -87,21 +99,114 @@ function Profile() {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      // Prototype simulate persistence
-      login(localStorage.getItem('token'), editUser); 
+      const res = await API.put('/users/profile', editUser);
+      login(localStorage.getItem('token'), res.data.data); 
+      setProfileUser(res.data.data);
       setShowEditModal(false);
       alert('Student profile updated successfully!');
     } catch (err) { console.error(err); }
   };
-
-  const handleAddProject = async (e) => {
+  
+  const handleExpSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post('/portfolio', newProject);
-      setPortfolio([...portfolio, res.data.data]);
-      setNewProject({ title: '', description: '', project_link: '', github_link: '' });
+      let updatedExp;
+      if (editingExperience !== null) {
+        updatedExp = experience.map((exp, i) => i === editingExperience ? newExperience : exp);
+      } else {
+        updatedExp = [...experience, newExperience];
+      }
+      const res = await API.put('/users/profile', { experience: updatedExp });
+      login(localStorage.getItem('token'), res.data.data);
+      setExperience(updatedExp);
+      setNewExperience({ title: '', company: '', duration: '', description: '' });
+      setEditingExperience(null);
+      setShowExpModal(false);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleEditExperience = (idx) => {
+    setNewExperience(experience[idx]);
+    setEditingExperience(idx);
+    setShowExpModal(true);
+  };
+
+  const handleDeleteExperience = async (idx) => {
+    if (!window.confirm('Delete this experience entry?')) return;
+    try {
+      const updatedExp = experience.filter((_, i) => i !== idx);
+      const res = await API.put('/users/profile', { experience: updatedExp });
+      login(localStorage.getItem('token'), res.data.data);
+      setExperience(updatedExp);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleEduSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      let updatedEdu;
+      if (editingEducation !== null) {
+        updatedEdu = education.map((edu, i) => i === editingEducation ? newEducation : edu);
+      } else {
+        updatedEdu = [...education, newEducation];
+      }
+      const res = await API.put('/users/profile', { education: updatedEdu });
+      login(localStorage.getItem('token'), res.data.data);
+      setEducation(updatedEdu);
+      setNewEducation({ school: '', degree: '', year: '' });
+      setEditingEducation(null);
+      setShowEduModal(false);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleEditEducation = (idx) => {
+    setNewEducation(education[idx]);
+    setEditingEducation(idx);
+    setShowEduModal(true);
+  };
+
+  const handleDeleteEducation = async (idx) => {
+    if (!window.confirm('Delete this education entry?')) return;
+    try {
+      const updatedEdu = education.filter((_, i) => i !== idx);
+      const res = await API.put('/users/profile', { education: updatedEdu });
+      login(localStorage.getItem('token'), res.data.data);
+      setEducation(updatedEdu);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleProjectSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingProject) {
+        const res = await API.put(`/portfolio/${editingProject}`, newProject);
+        setPortfolio(portfolio.map(p => p._id === editingProject ? res.data.data : p));
+      } else {
+        const res = await API.post('/portfolio', newProject);
+        setPortfolio([...portfolio, res.data.data]);
+      }
+      setNewProject({ title: '', description: '', project_link: '', github_link: '', image_url: '' });
+      setEditingProject(null);
       setShowProjectModal(false);
     } catch (err) { console.error(err); }
+  };
+
+  const handleEditProject = (p) => {
+    setNewProject({ 
+      title: p.title, 
+      description: p.description, 
+      project_link: p.project_link, 
+      github_link: p.github_link,
+      image_url: p.image_url || ''
+    });
+    setEditingProject(p._id);
+    setShowProjectModal(true);
+  };
+
+  const markAllRead = async () => {
+    try {
+      await API.patch('/notifications/read-all');
+    } catch (err) {}
   };
 
   const handleDeleteProject = async (id) => {
@@ -173,6 +278,10 @@ function Profile() {
     </div>
   );
 
+  // Define these for UI consistency
+  const pendingItems = endorsements.filter(e => !e.validated); 
+  const activeItems = endorsements.filter(e => e.validated);
+
   return (
     <div className="page profile-page">
       {/* 1. Hero Student Spotlight */}
@@ -183,7 +292,19 @@ function Profile() {
              <div className="avatar-lg-v2">{profileUser?.name?.[0]}</div>
           </div>
           <div className="user-main-info">
-            <h2 title="Verified Student Portfolio">{profileUser?.name}</h2>
+            <h2 
+               title="Verified Student Portfolio" 
+               style={{ 
+                 color: '#ffffff', 
+                 fontSize: '2.8rem', 
+                 fontWeight: 950, 
+                 letterSpacing: '-2px', 
+                 marginBottom: '0.6rem',
+                 textShadow: '0 4px 12px rgba(0,0,0,0.3)' 
+               }}
+            >
+               {profileUser?.name}
+            </h2>
             <div className="hero-badges">
                <span className="user-title-badge"><Award size={16} /> RISING TALENT</span>
                {profileUser?.college && (
@@ -226,9 +347,10 @@ function Profile() {
         <aside className="sidebar-glass">
            <div className="sidebar-card">
               <h3><Mail size={18} /> Credentials</h3>
+              <h3 className="section-header" style={{ marginBottom: '2rem' }}><Clock size={18} /> Reputation Pulse</h3>
               <div className="contact-row"><Mail size={18} /> {profileUser?.email}</div>
               <div className="contact-row"><Building size={18} /> {profileUser?.college || 'University Partner'}</div>
-              <div className="contact-row"><GraduationCap size={18} /> {profileUser?.year || '2024'} Batch</div>
+              <div className="contact-row"><GraduationCap size={18} /> {profileUser?.year || '2024'} Year</div>
               <div className="contact-row" style={{ marginTop: '1.5rem', color: '#2b6777' }}>
                 {profileUser?.github_url && <a href={profileUser.github_url} target="_blank" rel="noreferrer" className="icon-btn secondary" style={{ marginRight: '0.75rem' }}><Github size={20} /></a>}
                 {profileUser?.linkedin_url && <a href={profileUser.linkedin_url} target="_blank" rel="noreferrer" className="icon-btn secondary"><Linkedin size={20} /></a>}
@@ -267,6 +389,8 @@ function Profile() {
             <nav className="tab-nav-v2">
                <button className={activeTab === 'portfolio' ? 'active' : ''} onClick={() => setActiveTab('portfolio')}>Contributions</button>
                <button className={activeTab === 'skills' ? 'active' : ''} onClick={() => setActiveTab('skills')}>Skills Hub</button>
+               <button className={activeTab === 'experience' ? 'active' : ''} onClick={() => setActiveTab('experience')}>Experience</button>
+               <button className={activeTab === 'education' ? 'active' : ''} onClick={() => setActiveTab('education')}>Education</button>
                <button className={activeTab === 'validations' ? 'active' : ''} onClick={() => setActiveTab('validations')}>Validations</button>
                <button className={activeTab === 'reviews' ? 'active' : ''} onClick={() => setActiveTab('reviews')}>Reputation</button>
             </nav>
@@ -284,13 +408,24 @@ function Profile() {
                             <div className="project-card-v2" key={p._id || p.id}>
                                <div className="project-thumb" style={{ backgroundImage: `url(${p.image_url || MOCK_PROJECT_THUMB})` }}>
                                   {!isVisitor && (
-                                    <button 
-                                      onClick={() => handleDeleteProject(p._id || p.id)} 
-                                      className="icon-btn danger" 
-                                      style={{ position: 'absolute', top: '1rem', right: '1rem', width: '36px', height: '36px' }}
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
+                                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.4rem' }}>
+                                      <button 
+                                        onClick={() => handleEditProject(p)} 
+                                        className="icon-btn info" 
+                                        style={{ width: '34px', height: '34px' }}
+                                        title="Edit Entry"
+                                      >
+                                        <Pencil size={15} />
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteProject(p._id || p.id)} 
+                                        className="icon-btn danger" 
+                                        style={{ width: '34px', height: '34px' }}
+                                        title="Delete Entry"
+                                      >
+                                        <Trash2 size={15} />
+                                      </button>
+                                    </div>
                                   )}
                                </div>
                                <div className="project-body-v2">
@@ -342,8 +477,71 @@ function Profile() {
                   </div>
                 )}
 
+                {activeTab === 'experience' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                      <div className="section-header" style={{ fontSize: '1.2rem', letterSpacing: '0.1em' }}>PROFESSIONAL JOURNEY</div>
+                      {!isVisitor && <button className="add-btn" onClick={() => setShowExpModal(true)} style={{ padding: '0.7rem 1.4rem', borderRadius: '14px', fontSize: '0.85rem' }}><Plus size={20} /> NEW ENTRY</button>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {experience.length === 0 ? <div className="empty-box">No professional experiences shared yet.</div> : 
+                        experience.map((exp, idx) => (
+                          <div key={idx} style={{ background: 'white', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+                             <div style={{ display: 'flex', gap: '1.25rem' }}>
+                                <div style={{ background: '#eff6ff', color: '#2563eb', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Building size={24} /></div>
+                                <div>
+                                   <div style={{ fontSize: '1.1rem', fontWeight: 950, color: '#1e293b' }}>{exp.title}</div>
+                                   <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 700, marginBottom: '0.5rem' }}>{exp.company} • {exp.duration}</div>
+                                   <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.6 }}>{exp.description}</p>
+                                </div>
+                             </div>
+                             {!isVisitor && (
+                               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                 <button onClick={() => handleEditExperience(idx)} className="icon-btn info" style={{ height: '36px', width: '36px' }}><Pencil size={16} /></button>
+                                 <button onClick={() => handleDeleteExperience(idx)} className="icon-btn danger" style={{ height: '36px', width: '36px' }}><Trash2 size={16} /></button>
+                               </div>
+                             )}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'education' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                      <div className="section-header" style={{ fontSize: '1.2rem', letterSpacing: '0.1em' }}>ACADEMIC BACKGROUND</div>
+                      {!isVisitor && <button className="add-btn" onClick={() => setShowEduModal(true)} style={{ padding: '0.7rem 1.4rem', borderRadius: '14px', fontSize: '0.85rem' }}><Plus size={20} /> NEW ENTRY</button>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {education.length === 0 ? <div className="empty-box">No educational background added.</div> : 
+                        education.map((edu, idx) => (
+                          <div key={idx} style={{ background: 'white', padding: '1.5rem', borderRadius: '24px', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+                             <div style={{ display: 'flex', gap: '1.25rem' }}>
+                                <div style={{ background: '#fef3c7', color: '#d97706', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={24} /></div>
+                                <div>
+                                   <div style={{ fontSize: '1.1rem', fontWeight: 950, color: '#1e293b' }}>{edu.degree}</div>
+                                   <div style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 700, marginBottom: '0.2rem' }}>{edu.school}</div>
+                                   <div style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Class of {edu.year}</div>
+                                </div>
+                             </div>
+                             {!isVisitor && (
+                               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                 <button onClick={() => handleEditEducation(idx)} className="icon-btn info" style={{ height: '36px', width: '36px' }}><Edit2 size={16} /></button>
+                                 <button onClick={() => handleDeleteEducation(idx)} className="icon-btn danger" style={{ height: '36px', width: '36px' }}><Trash2 size={16} /></button>
+                               </div>
+                             )}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+
                {activeTab === 'validations' && (
                  <div className="validations-v2">
+                    <h3 className="section-header" style={{ color: '#3d8b7a', marginBottom: '2rem' }}><Zap size={18} /> Active Partnerships ({activeItems.filter(r => r.status !== 'completed').length})</h3>
                     <div className="section-header" style={{ fontSize: '1.2rem', letterSpacing: '0.1em', marginBottom: '2.5rem' }}>PEER ENDORSEMENTS</div>
                     {endorsements.length === 0 ? <div className="empty-box">Peer validations help build trust. Collaborate to get endorsed!</div> : 
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
@@ -433,13 +631,17 @@ function Profile() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                    <div className="form-field">
-                      <label>GitHub Forge</label>
-                      <input type="url" value={editUser.github_url || ''} onChange={e => setEditUser({...editUser, github_url: e.target.value})} className="input-premium" placeholder="https://github.com/..." />
+                      <label>College / University</label>
+                      <input type="text" value={editUser.college || ''} onChange={e => setEditUser({...editUser, college: e.target.value})} className="input-premium" />
                    </div>
                    <div className="form-field">
-                      <label>LinkedIn Workspace</label>
-                      <input type="url" value={editUser.linkedin_url || ''} onChange={e => setEditUser({...editUser, linkedin_url: e.target.value})} className="input-premium" placeholder="https://linkedin.com/in/..." />
+                      <label>Academic Year</label>
+                      <input type="text" value={editUser.year || ''} onChange={e => setEditUser({...editUser, year: e.target.value})} className="input-premium" placeholder="e.g. 2024" />
                    </div>
+                </div>
+                <div className="form-field">
+                   <label>Department / Major</label>
+                   <input type="text" value={editUser.department || ''} onChange={e => setEditUser({...editUser, department: e.target.value})} className="input-premium" placeholder="e.g. Computer Science" />
                 </div>
                 <button type="submit" className="btn-publish" style={{ marginTop: '1rem' }}><Check size={22} /> SYNC IDENTITY</button>
              </form>
@@ -451,10 +653,10 @@ function Profile() {
         <div className="modal-overlay">
            <div className="modal-content">
               <div className="modal-header">
-                 <h2 style={{ fontSize: '1.8rem' }}>New Technical Entry</h2>
-                 <button className="close-btn" onClick={() => setShowProjectModal(false)}><X size={20} /></button>
+                 <h2 style={{ fontSize: '1.8rem' }}>{editingProject ? 'Refine Spotlight' : 'New Technical Entry'}</h2>
+                 <button className="close-btn" onClick={() => { setShowProjectModal(false); setEditingProject(null); }}><X size={20} /></button>
               </div>
-              <form onSubmit={handleAddProject} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <form onSubmit={handleProjectSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                  <div className="form-field">
                     <label>Entry Title</label>
                     <input type="text" value={newProject.title} onChange={e => setNewProject({...newProject, title: e.target.value})} className="input-premium" placeholder="e.g. Neural Nexus Pipeline" required />
@@ -523,6 +725,62 @@ function Profile() {
               </button>
             </form>
           </div>
+        </div>
+      )}
+
+      {showExpModal && (
+        <div className="modal-overlay">
+           <div className="modal-content">
+              <div className="modal-header">
+                 <h2 style={{ fontSize: '1.8rem' }}>{editingExperience !== null ? 'Modify Experience Node' : 'New Experience Node'}</h2>
+                 <button className="close-btn" onClick={() => { setShowExpModal(false); setEditingExperience(null); }}><X size={20} /></button>
+              </div>
+              <form onSubmit={handleExpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                 <div className="form-field">
+                    <label>Position Title</label>
+                    <input type="text" value={newExperience.title} onChange={e => setNewExperience({...newExperience, title: e.target.value})} className="input-premium" placeholder="e.g. Frontend Intern" required />
+                 </div>
+                 <div className="form-field">
+                    <label>Organization / Company</label>
+                    <input type="text" value={newExperience.company} onChange={e => setNewExperience({...newExperience, company: e.target.value})} className="input-premium" placeholder="e.g. Tech Corp" required />
+                 </div>
+                 <div className="form-field">
+                    <label>Duration</label>
+                    <input type="text" value={newExperience.duration} onChange={e => setNewExperience({...newExperience, duration: e.target.value})} className="input-premium" placeholder="e.g. June 2023 - Aug 2023" required />
+                 </div>
+                 <div className="form-field">
+                    <label>Key Achievements</label>
+                    <textarea value={newExperience.description} onChange={e => setNewExperience({...newExperience, description: e.target.value})} className="textarea-premium" rows={3} placeholder="Describe your impact..." required />
+                 </div>
+                 <button type="submit" className="btn-publish" style={{ marginTop: '1rem' }}><Plus size={22} /> ADD EXPERIENCE</button>
+              </form>
+           </div>
+        </div>
+      )}
+
+      {showEduModal && (
+        <div className="modal-overlay">
+           <div className="modal-content">
+              <div className="modal-header">
+                 <h2 style={{ fontSize: '1.8rem' }}>{editingEducation !== null ? 'Refine Academic Credentials' : 'New Academic Node'}</h2>
+                 <button className="close-btn" onClick={() => { setShowEduModal(false); setEditingEducation(null); }}><X size={20} /></button>
+              </div>
+              <form onSubmit={handleEduSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                 <div className="form-field">
+                    <label>Degree / Certification</label>
+                    <input type="text" value={newEducation.degree} onChange={e => setNewEducation({...newEducation, degree: e.target.value})} className="input-premium" placeholder="e.g. B.Tech in CSE" required />
+                 </div>
+                 <div className="form-field">
+                    <label>Institution</label>
+                    <input type="text" value={newEducation.school} onChange={e => setNewEducation({...newEducation, school: e.target.value})} className="input-premium" placeholder="e.g. Amrita University" required />
+                 </div>
+                 <div className="form-field">
+                    <label>Class of (Year)</label>
+                    <input type="text" value={newEducation.year} onChange={e => setNewEducation({...newEducation, year: e.target.value})} className="input-premium" placeholder="e.g. 2024" required />
+                 </div>
+                 <button type="submit" className="btn-publish" style={{ marginTop: '1rem' }}><Plus size={22} /> ADD EDUCATION</button>
+              </form>
+           </div>
         </div>
       )}
     </div>

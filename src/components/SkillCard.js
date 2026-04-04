@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import { 
   User, Trash2, Send, ThumbsUp, Award, Star, Zap, Layers, 
   CheckCircle, Briefcase, Search, MessageCircle, MoreVertical, Heart, X, Handshake,
-  Mail, Github, Globe
+  Mail, Github, Globe, Pencil
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
@@ -32,7 +32,7 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [endorsing, setEndorsing] = useState(false);
-  const [endorsed, setEndorsed] = useState(false);
+  const [endorsed, setEndorsed] = useState(skill.isEndorsed || false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
@@ -103,7 +103,20 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
 
   return (
     <>
-      <div className="skill-card premium-hover" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className="collab-card" style={{ 
+        background: 'white',
+        borderRadius: '20px',
+        padding: '1.15rem',
+        border: '1.5px solid #e8ece9',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        aspectRatio: '1 / 1.1',
+        transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+        animation: 'collabFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
         {/* Top: Status & Flow */}
         <div className="card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
           <span className="type-tag" style={{ 
@@ -120,9 +133,29 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
           }}>
             <Briefcase size={12} /> {skill.type === 'offer' ? 'OFFERING' : 'SEEKING'}
           </span>
-          <span style={{ fontSize: '0.65rem', fontWeight: 950, color: '#94a3b8', letterSpacing: '0.1em' }}>
-            {(skill.category || 'DEVELOPMENT').toUpperCase()}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 950, color: '#94a3b8', letterSpacing: '0.1em' }}>
+              {(skill.category || 'DEVELOPMENT').toUpperCase()}
+            </span>
+            {isOwnSkill && (
+              <div style={{ position: 'relative', display: 'flex', gap: '0.4rem' }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onEdit(); }} 
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                  title="Edit Skill"
+                >
+                  <Pencil size={12} />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+                  title="Delete Skill"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Body: Focus Node */}
@@ -172,11 +205,27 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
               {(skill.user?.name?.[0] || skill.owner?.name?.[0] || 'S').toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="user-name" style={{ fontSize: '0.9rem', fontWeight: 950, color: '#1b3a4b', whiteSpace: 'normal', overflow: 'visible', textOverflow: 'clip', lineHeight: '1.2', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              <div className="user-name" style={{ 
+                fontSize: '0.9rem', 
+                fontWeight: 950, 
+                color: '#1b3a4b', 
+                whiteSpace: 'nowrap', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis',
+                lineHeight: '1.2' 
+              }}>
                 {skill.user?.name || skill.owner?.name || 'Talented Peer'}
               </div>
-              <div className="user-subline" style={{ fontSize: '0.65rem', color: '#5a7d8a', fontWeight: 800, marginTop: '2px' }}>
-                UNIVERSITY PARTNER
+              <div className="user-subline" style={{ 
+                fontSize: '0.65rem', 
+                color: '#5a7d8a', 
+                fontWeight: 800, 
+                marginTop: '2px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                {skill.user?.department || skill.owner?.department || skill.user?.college || skill.owner?.college || 'UNIVERSITY PARTNER'}
               </div>
             </div>
           </div>
@@ -184,10 +233,10 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
           <div className="card-actions" style={{ display: 'flex', gap: '0.65rem', marginLeft: '0.75rem' }}>
              <button 
                 className={`icon-btn secondary ${endorsed ? 'active' : ''}`}
-                onClick={handleEndorse}
-                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: '#64748b' }}
+                onClick={(e) => { e.stopPropagation(); handleEndorse(); }}
+                style={{ background: 'white', border: '1.5px solid #f1f5f9', borderRadius: '12px', color: endorsed ? '#2b6777' : '#64748b' }}
              >
-                <ThumbsUp size={18} />
+                <ThumbsUp size={18} fill={endorsed ? '#2b6777' : 'none'} />
              </button>
              <button 
                 className={`icon-btn secondary`}
@@ -199,18 +248,38 @@ function SkillCard({ skill, currentUser, onDelete, onEdit }) {
              
              {/* Message Trigger: Works if requested/accepted or if manual pilot is active */}
              <button 
-                className="icon-btn primary"
-                onClick={() => {
+                className={`icon-btn primary ${requested ? 'success' : ''}`}
+                onClick={(e) => {
+                   e.stopPropagation();
                    if (requested) {
                       navigate(`/messaging?user=${skillUserId}`);
                    } else {
                       handleRequest();
                    }
                 }}
-                style={{ background: '#1b3a4b', color: 'white', borderRadius: '10px', width: '40px' }}
-                title={requested ? "Message Peer" : "Request Sync"}
+                disabled={requesting}
+                style={{ 
+                   background: requested ? '#10b981' : '#1b3a4b', 
+                   color: 'white', 
+                   borderRadius: '10px', 
+                   width: '44px',
+                   height: '44px',
+                   display: 'flex',
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                   transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                   border: 'none',
+                   cursor: requesting ? 'wait' : 'pointer'
+                }}
+                title={requested ? "Collaborate Now" : "Request Collaboration Handshake"}
              >
-                {requested ? <Send size={20} /> : <Handshake size={20} />}
+                {requesting ? (
+                  <div className="mini-spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }}></div>
+                ) : requested ? (
+                  <Send size={18} />
+                ) : (
+                  <Handshake size={20} />
+                )}
              </button>
           </div>
         </div>
